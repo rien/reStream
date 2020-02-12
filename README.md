@@ -6,11 +6,9 @@ Snappy reMarkable screen sharing over SSH.
 
 On your **host** machine:
 - Any POSIX-shell (e.g. bash)
-- [zstd](http://www.zstd.net/)
 - ffmpeg (with ffplay)
 - ssh
 
-On your **reMarkable**:
-- zstd (`opkg install zstd`)
-- netcat (`opkg install netcat`)
-- coreutils-head (`opkg install coreutils-head`)
+On your **reMarkable** it is recommended to install [zstd](https://zstd.net) (`opkg install zstd` if you have [entware](https://github.com/evidlo/remarkable_entware) installed.) to have a smoother experience (sub-second latency). However, if you don't have it installed `reStream` will fall back to `gzip` which is installed by default.
+
+
