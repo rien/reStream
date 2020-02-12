@@ -7,11 +7,10 @@ Snappy reMarkable screen sharing over SSH.
 On your **host** machine:
 - Any POSIX-shell (e.g. bash)
 - [zstd](http://www.zstd.net/)
+- ffmpeg (with ffplay)
 - ssh
-- ffmpeg (with ffmplay)
 
 On your **reMarkable**:
-- Any POSIX-shell
-- [zstd](http://www.zstd.net/)
-- netcat
-- coreutils-head
+- zstd (`opkg install zstd`)
+- netcat (`opkg install netcat`)
+- coreutils-head (`opkg install coreutils-head`)
