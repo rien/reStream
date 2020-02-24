@@ -25,10 +25,9 @@ fi
 
 
 window_bytes="$(($width*$height*$bytes_per_pixel))"
-orientation_param="$($landscape && echo '-vf transpose=1')"
+landscape_param="$($landscape && echo '-vf transpose=1')"
 head_fb0="dd if=/dev/fb0 count=1 bs=$window_bytes 2>/dev/null"
 read_loop="while $head_fb0; do $loop_wait; done | $compress"
-
 
 set -e
 
