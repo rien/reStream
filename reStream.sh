@@ -1,5 +1,5 @@
 #!/bin/sh
-ssh_host="mohowzeg.usb"
+ssh_host="root@10.11.99.1"
 landscape=true
 
 width=1408
@@ -8,14 +8,13 @@ bytes_per_pixel=2
 loop_wait="true"
 loglevel="info"
 
-
 if ! ssh "$ssh_host" true; then
     echo "$ssh_host unreachable"
     exit 1
 fi
 
 # Gracefully degrade to gzip if zstd is not present
-if ssh "$ssh_host" "[ -f /opt/bin/zstd ]"; then
+if which zstd && ssh "$ssh_host" "[ -f /opt/bin/zstd ]"; then
     compress="/opt/bin/zstd"
     decompress="zstd -d"
 else
