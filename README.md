@@ -2,6 +2,8 @@
 
 reMarkable screen sharing over SSH.
 
+![A demo of reStream](extra/demo.gif)
+
 ## Usage
 
 1. Connect your reMarkable with the USB cable.
