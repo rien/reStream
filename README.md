@@ -37,5 +37,11 @@ You can install `zstd` on your host with your usual package manager. On Ubuntu,
 
 On your **reMarkable** you can do `opkg install zstd` if you have [entware](https://github.com/evidlo/remarkable_entware) installed. If you don't you can use the binary provided in this repository. In general you shouldn't trust binaries strangers on the internet provide to you, but I provide the option if you don't want the hassle of installing entware.
 
-You can copy the binary to your remarkable with `scp zstd.arm root@10.11.99.1:~/zstd`.
+You can install `zstd` on your reMarkable with the following steps:
+- Copy zstd: `scp zstd.arm root@10.11.99.1:~/zstd`
+- SSH to your reMarkable `ssh root@10.11.99.1`
+- Create the opt lib directory `mkdir -p /opt/lib`
+- Symlink a needed library `ln -s /lib/ld-linux-armhf.so.3 /opt/lib/ld-linux.so.3`
+
+This is currently a bit cumbersome. I'm trying to make this a bit easier.
 
