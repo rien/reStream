@@ -33,5 +33,5 @@ You can install `zstd` on your host with your usual package manager. On Ubuntu,
 
 On your **reMarkable** you can do `opkg install zstd` if you have [entware](https://github.com/evidlo/remarkable_entware) installed. If you don't you can use the binary provided in this repository. In general you shouldn't trust binaries strangers on the internet provide to you, but I provide the option if you don't want the hassle of installing entware.
 
-You can copy the binary to your remarkable with `scp zstd root@10.11.99.1:/home/root/zstd`.
+You can copy the binary to your remarkable with `scp zstd.arm root@10.11.99.1:~/zstd`.
 

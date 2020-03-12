@@ -28,8 +28,8 @@ fallback_to_gzip() {
 # check if zstd is present on remarkable
 if ssh "$ssh_host" "[ -f /opt/bin/zstd ]"; then
     compress="/opt/bin/zstd"
-elif ssh "$ssh_host" "[ -f /home/root/zstd ]"; then
-    compress="/home/root/zstd"
+elif ssh "$ssh_host" "[ -f ~/zstd ]"; then
+    compress="~/zstd"
 fi
 
 # gracefully degrade to gzip if zstd is not present on remarkable or host
