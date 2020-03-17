@@ -11,7 +11,7 @@ bytes_per_pixel=2
 loop_wait="true"
 loglevel="info"
 
-# check if we are able to reach the remarkabl
+# check if we are able to reach the remarkable
 if ! ssh "$ssh_host" true; then
     echo "$ssh_host unreachable"
     exit 1
@@ -25,22 +25,23 @@ fallback_to_gzip() {
     sleep 2
 }
 
-# check if zstd is present on remarkable
-if ssh "$ssh_host" "[ -f /opt/bin/zstd ]"; then
-    compress="/opt/bin/zstd"
-elif ssh "$ssh_host" "[ -f ~/zstd ]"; then
-    compress="~/zstd"
+
+# check if lz4 is present on remarkable
+if ssh "$ssh_host" "[ -f /opt/bin/lz4 ]"; then
+    compress="/opt/bin/lz4"
+elif ssh "$ssh_host" "[ -f ~/lz4 ]"; then
+    compress="~/lz4"
 fi
 
-# gracefully degrade to gzip if zstd is not present on remarkable or host
+# gracefully degrade to gzip if is not present on remarkable or host
 if [ -z "$compress" ]; then
-    echo "Your remarkable does not have zstd."
+    echo "Your remarkable does not have lz4."
     fallback_to_gzip
 elif ! which zstd; then
-    echo "Your host does not have zstd."
+    echo "Your host does not have lz4."
     fallback_to_gzip
 else
-    decompress="zstd -d"
+    decompress="lz4 -d"
 fi
 
 

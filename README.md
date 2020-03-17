@@ -29,19 +29,15 @@ On your **reMarkable** nothing is needed, unless you want...
 
 ### Sub-second latency
 
-To achieve sub-second latency, you'll need [zstd](https://zstd.net) on your
-host and on your reMarkable. 
+To achieve sub-second latency, you'll need [lz4](https://github.com/lz4/lz4) 
+on your host and on your reMarkable.
 
-You can install `zstd` on your host with your usual package manager. On Ubuntu,
-`apt install zstd` will work.
+You can install `lz4` on your host with your usual package manager. On Ubuntu,
+`apt install liblz4-tool` will do the trick.
 
-On your **reMarkable** you can do `opkg install zstd` if you have [entware](https://github.com/evidlo/remarkable_entware) installed. If you don't you can use the binary provided in this repository. In general you shouldn't trust binaries strangers on the internet provide to you, but I provide the option if you don't want the hassle of installing entware.
+On your **reMarkable** you'll need a binary of `lz4` build for the arm platform,
+you can do this yourself by [installing the reMarkable toolchain](https://remarkablewiki.com/devel/qt_creator#toolchain)
+and compiling `lz4` from source with the toolchain enabled, or you can use the
+statically linked binary I have already built and put in this repo.
 
-You can install `zstd` on your reMarkable with the following steps:
-- Copy zstd: `scp zstd.arm root@10.11.99.1:~/zstd`
-- SSH to your reMarkable `ssh root@10.11.99.1`
-- Create the opt lib directory `mkdir -p /opt/lib`
-- Symlink a needed library `ln -s /lib/ld-linux-armhf.so.3 /opt/lib/ld-linux.so.3`
-
-This is currently a bit cumbersome. I'm trying to make this a bit easier.
-
+Copy the `lz4` program to your reMarkable with `scp lz4.arm.static root@10.11.99.1:~/lz4` and you're ready to go.
