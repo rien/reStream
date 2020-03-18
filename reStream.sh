@@ -37,7 +37,7 @@ fi
 if [ -z "$compress" ]; then
     echo "Your remarkable does not have lz4."
     fallback_to_gzip
-elif ! which zstd; then
+elif ! which lz4; then
     echo "Your host does not have lz4."
     fallback_to_gzip
 else
