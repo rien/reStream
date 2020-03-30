@@ -8,6 +8,7 @@ reMarkable screen sharing over SSH.
 
 1. Clone this repository: `git clone https://github.com/rien/reStream`
 2. (Optional but recommended) [Install lz4 on your host and reMarkable](#sub-second-latency)
+3. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
 
 ## Usage
 
