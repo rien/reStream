@@ -1,8 +1,13 @@
 #!/bin/sh
 
-# these are probably the only two parameters you need to change
-ssh_host_usb="root@10.11.99.1" # location of the remarkable
-ssh_host_wifi=""
+# these are probably the only parameters you need to change
+ssh_host_usb="root@10.11.99.1" # location of the remarkable using usb
+ssh_host_wifi=""               # location of the remarkable using wifi
+landscape=true             # default vertical
+if [ "$1" = "-p" ]         # call with -p if you want vertical
+then
+    landscape=false
+fi
 
 # technical parameters
 width=1408
@@ -10,18 +15,6 @@ height=1872
 bytes_per_pixel=2
 loop_wait="true"
 loglevel="info"
-
-# set landscape
-landscape=true             # set to false if you want it horizontal
-for arg in "$@"
-do
-    case $arg in
-        -u|--upright)
-        landscape=false
-        shift
-        ;;
-    esac
-done
 
 # check if we are able to reach the remarkable
 if ! ssh -o ConnectTimeout=1 "$ssh_host_usb" true; then
