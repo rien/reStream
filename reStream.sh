@@ -2,7 +2,11 @@
 
 # these are probably the only two parameters you need to change
 ssh_host="root@10.11.99.1" # location of the remarkable
-landscape=true             # set to false if you want it horizontal
+landscape=true             # default vertical
+if [ "$1" = "-p" ]         # call with -p if you want vertical
+then
+    landscape=false
+fi
 
 # technical parameters
 width=1408
