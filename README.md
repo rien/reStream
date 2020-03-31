@@ -9,6 +9,7 @@ reMarkable screen sharing over SSH.
 1. Clone this repository: `git clone https://github.com/rien/reStream`.
 2. (Optional but recommended) [Install lz4 on your host and reMarkable](#sub-second-latency).
 3. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`.
+4. (Optional) If you want to connect using wifi (as fallback to usb) change `ssh_host_wifi` in `reStream.sh` (e.g. `root@192.168.178.16`)
 
 ## Usage
 
@@ -16,6 +17,8 @@ reMarkable screen sharing over SSH.
 2. Make sure you can [open an SSH connection](https://remarkablewiki.com/tech/ssh).
 3. Run `./reStream.sh`.
 4. A screen will pop-up on your local machine, with a live view of your reMarkable!
+
+If you want to use the horizontal mode run `./reStream.sh -u` (or `./reStream.sh --upright`).
 
 If you have problems, don't hesitate to [open an issue](https://github.com/rien/reStream/issues/new) or [send me an email](mailto:rien.maertens@posteo.be).
 
@@ -30,7 +33,7 @@ On your **reMarkable** nothing is needed, unless you want...
 
 ### Sub-second latency
 
-To achieve sub-second latency, you'll need [lz4](https://github.com/lz4/lz4) 
+To achieve sub-second latency, you'll need [lz4](https://github.com/lz4/lz4)
 on your host and on your reMarkable.
 
 You can install `lz4` on your host with your usual package manager. On Ubuntu,

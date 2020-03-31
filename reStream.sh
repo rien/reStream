@@ -1,8 +1,8 @@
 #!/bin/sh
 
 # these are probably the only two parameters you need to change
-ssh_host="root@10.11.99.1" # location of the remarkable
-landscape=true             # set to false if you want it horizontal
+ssh_host_usb="root@10.11.99.1" # location of the remarkable
+ssh_host_wifi=""
 
 # technical parameters
 width=1408
@@ -11,11 +11,36 @@ bytes_per_pixel=2
 loop_wait="true"
 loglevel="info"
 
+# set landscape
+landscape=true             # set to false if you want it horizontal
+for arg in "$@"
+do
+    case $arg in
+        -u|--upright)
+        landscape=false
+        shift
+        ;;
+    esac
+done
+
 # check if we are able to reach the remarkable
-if ! ssh "$ssh_host" true; then
-    echo "$ssh_host unreachable"
+if ! ssh -o ConnectTimeout=1 "$ssh_host_usb" true; then
+  if ! [ -z "$ssh_host_wifi" ]; then
+    if ! ssh "$ssh_host_wifi" true; then
+      echo "$ssh_host_wifi unreachable"
+      exit 1
+    else
+      ssh_host=$ssh_host_wifi
+      echo "usb host not reachable, using wifi instead"
+    fi
+  else
+    echo "usb host not reachable, wifi host not specified"
     exit 1
+  fi
+else
+  ssh_host=$ssh_host_usb
 fi
+
 
 fallback_to_gzip() {
     echo "Falling back to gzip, your experience may not be optimal."
@@ -70,4 +95,3 @@ ssh  "$ssh_host" "$read_loop" \
              -video_size "$width,$height" \
              $landscape_param \
              -i -
-
