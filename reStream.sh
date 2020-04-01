@@ -18,7 +18,7 @@ loglevel="info"
 
 # check if we are able to reach the remarkable
 if ! ssh -o ConnectTimeout=1 "$ssh_host_usb" true; then
-  if ! [ -z "$ssh_host_wifi" ]; then
+  if [ -n "$ssh_host_wifi" ]; then
     if ! ssh "$ssh_host_wifi" true; then
       echo "$ssh_host_wifi unreachable"
       exit 1
