@@ -3,10 +3,23 @@
 # these are probably the only two parameters you need to change
 ssh_host="root@10.11.99.1" # location of the remarkable
 landscape=true             # default vertical
-if [ "$1" = "-p" ]         # call with -p if you want vertical
-then
-    landscape=false
-fi
+
+# Loop through arguments and process them
+for arg in "$@"
+do
+    case $arg in
+        -p|--portrait)
+        landscape=false
+        shift
+        ;;
+        -h|--host)
+        ssh_host="$2"
+        shift
+        shift
+        ;;
+        *)
+    esac
+done
 
 # technical parameters
 width=1408
@@ -74,4 +87,3 @@ ssh  "$ssh_host" "$read_loop" \
              -video_size "$width,$height" \
              $landscape_param \
              -i -
-
