@@ -5,9 +5,8 @@ ssh_host="root@10.11.99.1" # remarkable connected trough USB
 landscape=true             # rotate 90 degrees to the right
 
 # loop through arguments and process them
-for arg in "$@"
-do
-    case $arg in
+while [ $# -gt 0 ]; do
+    case "$1" in
         -p|--portrait)
             landscape=false
             shift
