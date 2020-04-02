@@ -14,8 +14,13 @@ reMarkable screen sharing over SSH.
 
 1. Connect your reMarkable with the USB cable.
 2. Make sure you can [open an SSH connection](https://remarkablewiki.com/tech/ssh).
-3. Run `./reStream.sh` for landscape mode, or `./reStram.sh -p` for portrait mode.
+3. Run `./reStream.sh`
 4. A screen will pop-up on your local machine, with a live view of your reMarkable!
+
+### Options
+
+- `-p --portrait`: shows the reMarkable screen in portrait mode (the default is landscape mode, 90 degrees rotated tot the right)
+- `-d --destination`: the ssh destination of the reMarkable (default: `root@10.11.99.1`)
 
 If you have problems, don't hesitate to [open an issue](https://github.com/rien/reStream/issues/new) or [send me an email](mailto:rien.maertens@posteo.be).
 

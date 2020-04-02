@@ -1,23 +1,25 @@
 #!/bin/sh
 
-# these are probably the only two parameters you need to change
-ssh_host="root@10.11.99.1" # location of the remarkable
-landscape=true             # default vertical
+# default values for arguments
+ssh_host="root@10.11.99.1" # remarkable connected trough USB
+landscape=true             # rotate 90 degrees to the right
 
-# Loop through arguments and process them
+# loop through arguments and process them
 for arg in "$@"
 do
     case $arg in
         -p|--portrait)
-        landscape=false
-        shift
-        ;;
+            landscape=false
+            shift
+            ;;
         -d|--destination)
-        ssh_host="$2"
-        shift
-        shift
-        ;;
+            ssh_host="$2"
+            shift
+            shift
+            ;;
         *)
+            echo "Usage: $0 [-p] [-d <destination>]"
+            exit 1
     esac
 done
 
@@ -27,9 +29,10 @@ height=1872
 bytes_per_pixel=2
 loop_wait="true"
 loglevel="info"
+ssh_cmd="ssh -o ConnectTimeout=1 "$ssh_host""
 
 # check if we are able to reach the remarkable
-if ! ssh "$ssh_host" true; then
+if ! $ssh_cmd true; then
     echo "$ssh_host unreachable"
     exit 1
 fi
@@ -44,9 +47,9 @@ fallback_to_gzip() {
 
 
 # check if lz4 is present on remarkable
-if ssh "$ssh_host" "[ -f /opt/bin/lz4 ]"; then
+if $ssh_cmd "[ -f /opt/bin/lz4 ]"; then
     compress="/opt/bin/lz4"
-elif ssh "$ssh_host" "[ -f ~/lz4 ]"; then
+elif $ssh_cmd "[ -f ~/lz4 ]"; then
     compress="~/lz4"
 fi
 
@@ -78,7 +81,7 @@ read_loop="while $head_fb0; do $loop_wait; done | $compress"
 
 set -e # stop if an error occurs
 
-ssh  "$ssh_host" "$read_loop" \
+$ssh_cmd "$read_loop" \
     | $decompress \
     | ffplay -vcodec rawvideo \
              -loglevel "$loglevel" \
