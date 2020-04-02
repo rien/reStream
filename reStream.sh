@@ -12,7 +12,7 @@ do
         landscape=false
         shift
         ;;
-        -h|--host)
+        -d|--destination)
         ssh_host="$2"
         shift
         shift
