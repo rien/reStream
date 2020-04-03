@@ -7,11 +7,11 @@ landscape=true             # rotate 90 degrees to the right
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
     case "$1" in
-        -p|--portrait)
+        -p | --portrait)
             landscape=false
             shift
             ;;
-        -d|--destination)
+        -d | --destination)
             ssh_host="$2"
             shift
             shift
@@ -19,6 +19,7 @@ while [ $# -gt 0 ]; do
         *)
             echo "Usage: $0 [-p] [-d <destination>]"
             exit 1
+            ;;
     esac
 done
 
@@ -28,10 +29,13 @@ height=1872
 bytes_per_pixel=2
 loop_wait="true"
 loglevel="info"
-ssh_cmd="ssh -o ConnectTimeout=1 "$ssh_host""
+
+ssh_cmd() {
+    ssh -o ConnectTimeout=1 "$ssh_host" "$@"
+}
 
 # check if we are able to reach the remarkable
-if ! $ssh_cmd true; then
+if ! ssh_cmd true; then
     echo "$ssh_host unreachable"
     exit 1
 fi
@@ -44,12 +48,11 @@ fallback_to_gzip() {
     sleep 2
 }
 
-
 # check if lz4 is present on remarkable
-if $ssh_cmd "[ -f /opt/bin/lz4 ]"; then
+if ssh_cmd "[ -f /opt/bin/lz4 ]"; then
     compress="/opt/bin/lz4"
-elif $ssh_cmd "[ -f ~/lz4 ]"; then
-    compress="~/lz4"
+elif ssh_cmd "[ -f ~/lz4 ]"; then
+    compress="\$HOME/lz4"
 fi
 
 # gracefully degrade to gzip if is not present on remarkable or host
@@ -63,11 +66,8 @@ else
     decompress="lz4 -d"
 fi
 
-
-
-
 # calculte how much bytes the window is
-window_bytes="$(($width*$height*$bytes_per_pixel))"
+window_bytes="$((width * height * bytes_per_pixel))"
 
 # rotate 90 degrees if landscape=true
 landscape_param="$($landscape && echo '-vf transpose=1')"
@@ -80,12 +80,14 @@ read_loop="while $head_fb0; do $loop_wait; done | $compress"
 
 set -e # stop if an error occurs
 
-$ssh_cmd "$read_loop" \
+# shellcheck disable=SC2086
+ssh_cmd "$read_loop" \
     | $decompress \
-    | ffplay -vcodec rawvideo \
-             -loglevel "$loglevel" \
-             -f rawvideo \
-             -pixel_format gray16le \
-             -video_size "$width,$height" \
-             $landscape_param \
-             -i -
+    | ffplay \
+        -vcodec rawvideo \
+        -loglevel "$loglevel" \
+        -f rawvideo \
+        -pixel_format gray16le \
+        -video_size "$width,$height" \
+        $landscape_param \
+        -i -
