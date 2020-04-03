@@ -79,12 +79,13 @@ fi
 
 
 output_args=()
+video_filters=()
 
 # calculate how much bytes the window is
 window_bytes="$(($width*$height*$bytes_per_pixel))"
 
 # rotate 90 degrees if landscape=true
-$landscape && output_args+=('-vf' 'transpose=1')
+$landscape && video_filters+=('transpose=1')
 
 # read the first $window_bytes of the framebuffer
 head_fb0="dd if=/dev/fb0 count=1 bs=$window_bytes 2>/dev/null"
@@ -103,6 +104,12 @@ else
 
     output_args+=("$output_path")
 fi
+
+# set frame presentation time to the time it was received
+video_filters+=('setpts=(RTCTIME - RTCSTART) / (TB * 1000000)')
+
+joined_filters=$(IFS=,; echo "${video_filters[*]}")
+output_args+=('-vf' "$joined_filters")
 
 set -e # stop if an error occurs
 
