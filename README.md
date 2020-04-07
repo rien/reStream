@@ -20,7 +20,9 @@ reMarkable screen sharing over SSH.
 ### Options
 
 - `-p --portrait`: shows the reMarkable screen in portrait mode (the default is landscape mode, 90 degrees rotated tot the right)
-- `-d --destination`: the ssh destination of the reMarkable (default: `root@10.11.99.1`)
+- `-s --source`: the ssh destination of the reMarkable (default: `root@10.11.99.1`)
+- `-o --output`: path of the output where the video should be recorded, as understood by `ffmpeg`; if this is `-`, the video is displayed in a new window and not recorded anywhere (default: `-`)
+- `-f --format`: when recording to an output, this option is used to force the encoding format; if this is `-`, `ffmpeg`’s auto format detection based on the file extension is used (default: `-`).
 
 If you have problems, don't hesitate to [open an issue](https://github.com/rien/reStream/issues/new) or [send me an email](mailto:rien.maertens@posteo.be).
 
