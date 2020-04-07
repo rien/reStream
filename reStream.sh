@@ -13,17 +13,17 @@ while [ $# -gt 0 ]; do
             landscape=false
             shift
             ;;
-        -s|--source)
+        -s | --source)
             ssh_host="$2"
             shift
             shift
             ;;
-        -o|--output)
+        -o | --output)
             output_path="$2"
             shift
             shift
             ;;
-        -f|--format)
+        -f | --format)
             format="$2"
             shift
             shift
@@ -78,8 +78,6 @@ else
     decompress="lz4 -d"
 fi
 
-
-
 # list of ffmpeg filters to apply
 video_filters=""
 
@@ -121,10 +119,10 @@ set -e # stop if an error occurs
 ssh_cmd "$read_loop" \
     | $decompress \
     | "$output_cmd" \
-             -vcodec rawvideo \
-             -loglevel "$loglevel" \
-             -f rawvideo \
-             -pixel_format gray16le \
-             -video_size "$width,$height" \
-             -i - \
-             "$@"
+        -vcodec rawvideo \
+        -loglevel "$loglevel" \
+        -f rawvideo \
+        -pixel_format gray16le \
+        -video_size "$width,$height" \
+        -i - \
+        "$@"
