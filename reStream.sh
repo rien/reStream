@@ -28,8 +28,14 @@ while [ $# -gt 0 ]; do
             shift
             shift
             ;;
-        *)
+        -h | --help | *)
             echo "Usage: $0 [-p] [-s <source>] [-o <output>] [-f <format>]"
+            echo "Examples:"
+            echo "	$0                              # live view in landscape"
+            echo "	$0 -p                           # live view in portrait"
+            echo "	$0 -s 192.168.0.10              # connect to different IP"
+            echo "	$0 -o remarkable.mp4            # record to a file"
+            echo "	$0 -o udp://dest:1234 -f mpegts # record to a stream"
             exit 1
             ;;
     esac
