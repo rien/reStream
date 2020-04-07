@@ -71,7 +71,7 @@ fi
 if [ -z "$compress" ]; then
     echo "Your remarkable does not have lz4."
     fallback_to_gzip
-elif ! which lz4; then
+elif ! lz4 -V; then
     echo "Your host does not have lz4."
     fallback_to_gzip
 else
@@ -80,9 +80,11 @@ fi
 
 
 
-
-output_args=""
+# list of ffmpeg filters to apply
 video_filters=""
+
+# store extra ffmpeg arguments in $@
+set --
 
 # calculate how much bytes the window is
 window_bytes="$((width * height * bytes_per_pixel))"
@@ -90,11 +92,16 @@ window_bytes="$((width * height * bytes_per_pixel))"
 # rotate 90 degrees if landscape=true
 $landscape && video_filters="$video_filters,transpose=1"
 
+# set each frame presentation time to the time it is received
+video_filters="$video_filters,setpts=(RTCTIME - RTCSTART) / (TB * 1000000)"
+
 # read the first $window_bytes of the framebuffer
 head_fb0="dd if=/dev/fb0 count=1 bs=$window_bytes 2>/dev/null"
 
 # loop that keeps on reading and compressing, to be executed remotely
 read_loop="while $head_fb0; do $loop_wait; done | $compress"
+
+set -- "$@" -vf "${video_filters#,}"
 
 if [ "$output_path" = - ]; then
     output_cmd=ffplay
@@ -102,16 +109,11 @@ else
     output_cmd=ffmpeg
 
     if [ "$format" != - ]; then
-        output_args="$output_args -f '$format' "
+        set -- "$@" -f "$format"
     fi
 
-    output_args="$output_args '$output_path'"
+    set -- "$@" "$output_path"
 fi
-
-# set frame presentation time to the time it was received
-video_filters="$video_filters,setpts=(RTCTIME - RTCSTART) / (TB * 1000000)"
-
-output_args="$output_args -vf '${video_filters#,}'"
 
 set -e # stop if an error occurs
 
@@ -125,4 +127,4 @@ ssh_cmd "$read_loop" \
              -pixel_format gray16le \
              -video_size "$width,$height" \
              -i - \
-             "${output_args[@]}"
+             "$@"
