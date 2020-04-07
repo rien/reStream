@@ -49,8 +49,8 @@ and compiling `lz4` from source with the toolchain enabled, or you can use the
 statically linked binary I have already built and put in this repo.
 
 Copy the `lz4` program to your reMarkable with
-`scp lz4.arm.static root@10.11.99.1:~/lz4`, make it executable with
-`ssh root@10.11.99.1 'chmod +x ~/lz4'` and you're ready to go.
+`scp lz4.arm.static root@10.11.99.1:/home/root/lz4`, make it executable with
+`ssh root@10.11.99.1 'chmod +x /home/root/lz4'` and you're ready to go.
 
 ## Troubleshooting
 

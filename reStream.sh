@@ -9,7 +9,7 @@ format=-                   # automatic output format
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
     case "$1" in
-        -p|--portrait)
+        -p | --portrait)
             landscape=false
             shift
             ;;
@@ -31,6 +31,7 @@ while [ $# -gt 0 ]; do
         *)
             echo "Usage: $0 [-p] [-s <source>] [-o <output>] [-f <format>]"
             exit 1
+            ;;
     esac
 done
 
@@ -40,10 +41,13 @@ height=1872
 bytes_per_pixel=2
 loop_wait="true"
 loglevel="info"
-ssh_cmd="ssh -o ConnectTimeout=1 "$ssh_host""
+
+ssh_cmd() {
+    ssh -o ConnectTimeout=1 "$ssh_host" "$@"
+}
 
 # check if we are able to reach the remarkable
-if ! $ssh_cmd true; then
+if ! ssh_cmd true; then
     echo "$ssh_host unreachable"
     exit 1
 fi
@@ -56,12 +60,11 @@ fallback_to_gzip() {
     sleep 2
 }
 
-
 # check if lz4 is present on remarkable
-if $ssh_cmd "[ -f /opt/bin/lz4 ]"; then
+if ssh_cmd "[ -f /opt/bin/lz4 ]"; then
     compress="/opt/bin/lz4"
-elif $ssh_cmd "[ -f ~/lz4 ]"; then
-    compress="~/lz4"
+elif ssh_cmd "[ -f ~/lz4 ]"; then
+    compress="\$HOME/lz4"
 fi
 
 # gracefully degrade to gzip if is not present on remarkable or host
@@ -82,7 +85,7 @@ output_args=""
 video_filters=""
 
 # calculate how much bytes the window is
-window_bytes="$(($width*$height*$bytes_per_pixel))"
+window_bytes="$((width * height * bytes_per_pixel))"
 
 # rotate 90 degrees if landscape=true
 $landscape && video_filters="$video_filters,transpose=1"
@@ -94,9 +97,9 @@ head_fb0="dd if=/dev/fb0 count=1 bs=$window_bytes 2>/dev/null"
 read_loop="while $head_fb0; do $loop_wait; done | $compress"
 
 if [ "$output_path" = - ]; then
-    output_command=ffplay
+    output_cmd=ffplay
 else
-    output_command=ffmpeg
+    output_cmd=ffmpeg
 
     if [ "$format" != - ]; then
         output_args="$output_args -f '$format' "
@@ -112,9 +115,10 @@ output_args="$output_args -vf '${video_filters#,}'"
 
 set -e # stop if an error occurs
 
-$ssh_cmd "$read_loop" \
+# shellcheck disable=SC2086
+ssh_cmd "$read_loop" \
     | $decompress \
-    | "$output_command" \
+    | "$output_cmd" \
              -vcodec rawvideo \
              -loglevel "$loglevel" \
              -f rawvideo \
