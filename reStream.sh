@@ -5,6 +5,7 @@ ssh_host="root@10.11.99.1" # remarkable connected through USB
 landscape=true             # rotate 90 degrees to the right
 output_path=-              # display output through ffplay
 format=-                   # automatic output format
+webcam=false               # not to a webcam
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
@@ -28,6 +29,27 @@ while [ $# -gt 0 ]; do
             shift
             shift
             ;;
+        -w | --webcam)
+            webcam=true
+            format="v4l2"
+
+            # check if there is a modprobed v4l2 loopback device
+            # use the first cam as default if there is no output_path already
+            cam_path=$(v4l2-ctl --list-devices \
+                | sed -n '/^[^\s]\+platform:v4l2loopback/{n;s/\s*//g;p;q}')
+
+            # fail if there is no such device
+            if [ -e "$cam_path" ]; then
+                if [ "$output_path" = "-" ]; then
+                    output_path="$cam_path"
+                fi
+            else
+                echo "Could not find a video loopback device, did you"
+                echo "sudo modprobe v4l2loopback"
+                exit 1
+            fi
+            shift
+            ;;
         -h | --help | *)
             echo "Usage: $0 [-p] [-s <source>] [-o <output>] [-f <format>]"
             echo "Examples:"
@@ -36,6 +58,7 @@ while [ $# -gt 0 ]; do
             echo "	$0 -s 192.168.0.10              # connect to different IP"
             echo "	$0 -o remarkable.mp4            # record to a file"
             echo "	$0 -o udp://dest:1234 -f mpegts # record to a stream"
+            echo "  $0 -w                           # write to a webcam (yuv420p + resize)"
             exit 1
             ;;
     esac
@@ -95,6 +118,23 @@ window_bytes="$((width * height * bytes_per_pixel))"
 
 # rotate 90 degrees if landscape=true
 $landscape && video_filters="$video_filters,transpose=1"
+
+# Scale and add padding if we are targeting a webcam because a lot of services
+# expect a size of exactly 1280x720 (tested in Firefox, MS Teams, and Skype for
+# for business). Send a PR is you can get a heigher resolution working.
+if $webcam; then
+    video_filters="$video_filters,format=pix_fmts=yuv420p"
+    if $landscape; then
+        render_width=$((720 * height / width))
+    else
+        render_width=$((720 * width / height))
+    fi
+
+    # center
+    offset_left=$(((1280 - render_width) / 2))
+    video_filters="$video_filters,scale=${render_width}x720"
+    video_filters="$video_filters,pad=1280:720:$offset_left:0:#eeeeee"
+fi
 
 # set each frame presentation time to the time it is received
 video_filters="$video_filters,setpts=(RTCTIME - RTCSTART) / (TB * 1000000)"

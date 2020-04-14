@@ -24,6 +24,7 @@ reMarkable screen sharing over SSH.
 - `-s --source`: the ssh destination of the reMarkable (default: `root@10.11.99.1`)
 - `-o --output`: path of the output where the video should be recorded, as understood by `ffmpeg`; if this is `-`, the video is displayed in a new window and not recorded anywhere (default: `-`)
 - `-f --format`: when recording to an output, this option is used to force the encoding format; if this is `-`, `ffmpeg`’s auto format detection based on the file extension is used (default: `-`).
+- `-w --webcam`: record to a video4linux2 web cam device. By default the first found web cam is taken, this can be overwritten with `-o`. The video is scaled to 1280x720 to ensure compatibility with MS Teams, Skype for business and other programs which need this specific format.
 
 If you have problems, don't hesitate to [open an issue](https://github.com/rien/reStream/issues/new) or [send me an email](mailto:rien.maertens@posteo.be).
 
@@ -38,7 +39,7 @@ On your **reMarkable** nothing is needed, unless you want...
 
 ### Sub-second latency
 
-To achieve sub-second latency, you'll need [lz4](https://github.com/lz4/lz4) 
+To achieve sub-second latency, you'll need [lz4](https://github.com/lz4/lz4)
 on your host and on your reMarkable.
 
 You can install `lz4` on your host with your usual package manager. On Ubuntu,
