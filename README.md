@@ -24,6 +24,7 @@ reMarkable screen sharing over SSH.
 - `-s --source`: the ssh destination of the reMarkable (default: `root@10.11.99.1`)
 - `-o --output`: path of the output where the video should be recorded, as understood by `ffmpeg`; if this is `-`, the video is displayed in a new window and not recorded anywhere (default: `-`)
 - `-f --format`: when recording to an output, this option is used to force the encoding format; if this is `-`, `ffmpeg`’s auto format detection based on the file extension is used (default: `-`).
+- `-w --webcam`: record to a video4linux2 web cam device. By default the first found web cam is taken, this can be overwritten with `-o`. The video is scaled to 1280x720 to ensure compatibility with MS Teams, Skype for business and other programs which need this specific format.
 
 If you have problems, don't hesitate to [open an issue](https://github.com/rien/reStream/issues/new) or [send me an email](mailto:rien.maertens@posteo.be).
 
@@ -33,12 +34,13 @@ On your **host** machine:
 - Any POSIX-shell (e.g. bash)
 - ffmpeg (with ffplay)
 - ssh
+- Video4Linux loopback kernel module if you want to use `--webcam`
 
 On your **reMarkable** nothing is needed, unless you want...
 
 ### Sub-second latency
 
-To achieve sub-second latency, you'll need [lz4](https://github.com/lz4/lz4) 
+To achieve sub-second latency, you'll need [lz4](https://github.com/lz4/lz4)
 on your host and on your reMarkable.
 
 You can install `lz4` on your host with your usual package manager. On Ubuntu,
@@ -52,6 +54,30 @@ statically linked binary I have already built and put in this repo.
 Copy the `lz4` program to your reMarkable with
 `scp lz4.arm.static root@10.11.99.1:/home/root/lz4`, make it executable with
 `ssh root@10.11.99.1 'chmod +x /home/root/lz4'` and you're ready to go.
+
+### Video4Linux Loopback
+
+To set your remarkable as a webcam we need to be able to fake one. This is where the Video4Linux loopback kernel module comes into play. We need both the dkms and util packages. On Ubuntu you need to install:
+
+```
+apt install v4l2loopback-utils v4l2loopback-dkms
+```
+
+In some package managers `v4l2loopback-utils` is found in `v4l-utils`.
+
+After installing the module you must enable it with 
+
+```
+modprobe v4l2loopback
+```
+
+To verify that this worked, execute: 
+
+```
+v4l2-ctl --list-devices
+```
+
+The result should contain a line with "platform:v4l2loopback".
 
 ## Troubleshooting
 
