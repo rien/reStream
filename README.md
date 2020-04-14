@@ -34,6 +34,7 @@ On your **host** machine:
 - Any POSIX-shell (e.g. bash)
 - ffmpeg (with ffplay)
 - ssh
+- Video4Linux loopback kernel module if you want to use `--webcam`
 
 On your **reMarkable** nothing is needed, unless you want...
 
@@ -53,6 +54,30 @@ statically linked binary I have already built and put in this repo.
 Copy the `lz4` program to your reMarkable with
 `scp lz4.arm.static root@10.11.99.1:/home/root/lz4`, make it executable with
 `ssh root@10.11.99.1 'chmod +x /home/root/lz4'` and you're ready to go.
+
+### Video4Linux Loopback
+
+To set your remarkable as a webcam we need to be able to fake one. This is where the Video4Linux loopback kernel module comes into play. We need both the dkms and util packages. On Ubuntu you need to install:
+
+```
+apt install v4l2loopback-utils v4l2loopback-dkms
+```
+
+In some package managers `v4l2loopback-utils` is found in `v4l-utils`.
+
+After installing the module you must enable it with 
+
+```
+modprobe v4l2loopback
+```
+
+To verify that this worked, execute: 
+
+```
+v4l2-ctl --list-devices
+```
+
+The result should contain a line with "platform:v4l2loopback".
 
 ## Troubleshooting
 
