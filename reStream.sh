@@ -168,7 +168,7 @@ ssh_cmd "$read_loop" \
         -vcodec rawvideo \
         -loglevel "$loglevel" \
         -f rawvideo \
-        -pixel_format gray16le \
+        -pixel_format rgb565le \
         -video_size "$width,$height" \
         -i - \
         "$@"
