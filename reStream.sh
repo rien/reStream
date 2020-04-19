@@ -6,6 +6,7 @@ landscape=true             # rotate 90 degrees to the right
 output_path=-              # display output through ffplay
 format=-                   # automatic output format
 webcam=false               # not to a webcam
+measure_throughput=false   # measure how fast data is being transferred
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
@@ -27,6 +28,10 @@ while [ $# -gt 0 ]; do
         -f | --format)
             format="$2"
             shift
+            shift
+            ;;
+        -t | --throughput)
+            measure_throughput=true
             shift
             ;;
         -w | --webcam)
@@ -100,11 +105,24 @@ fi
 if [ -z "$compress" ]; then
     echo "Your remarkable does not have lz4."
     fallback_to_gzip
-elif ! lz4 -V; then
+elif ! lz4 -V > /dev/null; then
     echo "Your host does not have lz4."
     fallback_to_gzip
 else
     decompress="lz4 -d"
+fi
+
+# use pv to measure throughput if desired, else we just pipe through cat
+if $measure_throughput; then
+    if ! pv --version > /dev/null; then
+        echo "You need to install pv to measure data throughput."
+        exit 1
+    else
+        loglevel="error" # verbose ffmpeg output interferes with pv
+        host_passthrough="pv"
+    fi
+else
+    host_passthrough="cat"
 fi
 
 # list of ffmpeg filters to apply
@@ -164,6 +182,7 @@ set -e # stop if an error occurs
 # shellcheck disable=SC2086
 ssh_cmd "$read_loop" \
     | $decompress \
+    | $host_passthrough \
     | "$output_cmd" \
         -vcodec rawvideo \
         -loglevel "$loglevel" \
