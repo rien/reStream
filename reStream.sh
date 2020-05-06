@@ -105,7 +105,7 @@ fi
 if [ -z "$compress" ]; then
     echo "Your remarkable does not have lz4."
     fallback_to_gzip
-elif ! lz4 -V > /dev/null; then
+elif ! lz4 -V >/dev/null; then
     echo "Your host does not have lz4."
     fallback_to_gzip
 else
@@ -114,7 +114,7 @@ fi
 
 # use pv to measure throughput if desired, else we just pipe through cat
 if $measure_throughput; then
-    if ! pv --version > /dev/null; then
+    if ! pv --version >/dev/null; then
         echo "You need to install pv to measure data throughput."
         exit 1
     else
