@@ -69,13 +69,6 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-# technical parameters
-width=1408
-height=1872
-bytes_per_pixel=2
-loop_wait="true"
-loglevel="info"
-
 ssh_cmd() {
     ssh -o ConnectTimeout=1 "$ssh_host" "$@"
 }
@@ -85,6 +78,67 @@ if ! ssh_cmd true; then
     echo "$ssh_host unreachable"
     exit 1
 fi
+
+rm_version="$(ssh_cmd cat /sys/devices/soc0/machine)"
+
+# We cannot read the framebuffer directory in the reMarkable 2, but we know the
+# address of the pointer to the framebuffer for some reMarkable 2 versions.
+# This will need to be changed each time xochitl updates.
+rm2_getpointer() {
+    xochitl_version="$(ssh_cmd "sed -n 's/^REMARKABLE_RELEASE_VERSION=//p' /usr/share/remarkable/update.conf")"
+    case "$xochitl_version" in
+        "2.3.*")
+            echo "4121024"
+            ;;
+        "2.4.*")
+            # TODO
+            echo "???"
+            ;;
+        *) # use last known version if we cannot find a match
+            echo "WARNING: unknown reMarkable 2 release version" >&2
+            echo "consider updating if reStream doesn't work"    >&2
+            echo "???"
+        ;;
+    esac
+}
+
+case "$rm_version" in
+    "reMarkable 1.0")
+        width=1408
+        height=1872
+        bytes_per_pixel=2
+        pixel_format="rgb565le"
+        # calculate how much bytes the window is
+        window_bytes="$((width * height * bytes_per_pixel))"
+        # read the first $window_bytes of the framebuffer
+        head_fb0="dd if=/dev/fb0 count=1 bs=$window_bytes 2>/dev/null"
+        ;;
+    "reMarkable 2.0")
+        width=1404
+        height=1872
+        bytes_per_pixel=1
+        pixel_format="gray8"
+        pid="$(ssh_cmd pidof xochitl)"
+        pointer="$(rm2_getpointer)"
+        read_address="addr=\$(dd if=/proc/$pid/mem bs=1 count=4 skip=$pointer 2>/dev/null | hexdump | awk '{print \$3\$2\}') && printf '%d' \$((16#\$addr))"
+        skipbytes="$(ssh_cmd "$read_address")"
+        # calculate how much bytes the window is
+        window_bytes="$((width * height * bytes_per_pixel))"
+        # carve the framebuffer out of the process memory
+        head_fb0="dd if=/proc/$pid/mem bs=1 count=$window_bytes skip=$skipbytes 2>/dev/null"
+        ;;
+    *)
+        echo "Unsupported reMarkable version: $rm_version."
+        echo "Please visit https://github.com/rien/reStream/ for updates."
+        exit 1
+        ;;
+esac
+
+
+# technical parameters
+loop_wait="true"
+loglevel="info"
+
 
 fallback_to_gzip() {
     echo "Falling back to gzip, your experience may not be optimal."
@@ -131,8 +185,6 @@ video_filters=""
 # store extra ffmpeg arguments in $@
 set --
 
-# calculate how much bytes the window is
-window_bytes="$((width * height * bytes_per_pixel))"
 
 # rotate 90 degrees if landscape=true
 $landscape && video_filters="$video_filters,transpose=1"
@@ -157,8 +209,6 @@ fi
 # set each frame presentation time to the time it is received
 video_filters="$video_filters,setpts=(RTCTIME - RTCSTART) / (TB * 1000000)"
 
-# read the first $window_bytes of the framebuffer
-head_fb0="dd if=/dev/fb0 count=1 bs=$window_bytes 2>/dev/null"
 
 # loop that keeps on reading and compressing, to be executed remotely
 read_loop="while $head_fb0; do $loop_wait; done | $compress"
@@ -187,7 +237,7 @@ ssh_cmd "$read_loop" \
         -vcodec rawvideo \
         -loglevel "$loglevel" \
         -f rawvideo \
-        -pixel_format rgb565le \
+        -pixel_format "$pixel_format" \
         -video_size "$width,$height" \
         -i - \
         "$@"
