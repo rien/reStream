@@ -96,9 +96,9 @@ rm2_getpointer() {
             ;;
         *) # use last known version if we cannot find a match
             echo "WARNING: unknown reMarkable 2 release version" >&2
-            echo "consider updating if reStream doesn't work"    >&2
+            echo "consider updating if reStream doesn't work" >&2
             echo "???"
-        ;;
+            ;;
     esac
 }
 
@@ -134,11 +134,9 @@ case "$rm_version" in
         ;;
 esac
 
-
 # technical parameters
 loop_wait="true"
 loglevel="info"
-
 
 fallback_to_gzip() {
     echo "Falling back to gzip, your experience may not be optimal."
@@ -185,7 +183,6 @@ video_filters=""
 # store extra ffmpeg arguments in $@
 set --
 
-
 # rotate 90 degrees if landscape=true
 $landscape && video_filters="$video_filters,transpose=1"
 
@@ -208,7 +205,6 @@ fi
 
 # set each frame presentation time to the time it is received
 video_filters="$video_filters,setpts=(RTCTIME - RTCSTART) / (TB * 1000000)"
-
 
 # loop that keeps on reading and compressing, to be executed remotely
 read_loop="while $head_fb0; do $loop_wait; done | $compress"
