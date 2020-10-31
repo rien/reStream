@@ -126,7 +126,7 @@ case "$rm_version" in
         pixel_format="gray8"
         pid="$(ssh_cmd pidof xochitl)"
         pointer="$(rm2_getpointer)"
-        read_address="addr=\$(dd if=/proc/$pid/mem bs=1 count=4 skip=$pointer 2>/dev/null | hexdump | awk '{print \$3\$2\}') && printf '%d' \$((16#\$addr))"
+        read_address="addr=\$(dd if=/proc/$pid/mem bs=1 count=4 skip=$pointer 2>/dev/null | hexdump | awk '{print \$3\$2}') && printf '%d' \$((16#\$addr))"
         skipbytes="$(ssh_cmd "$read_address")"
         # calculate how much bytes the window is
         window_bytes="$((width * height * bytes_per_pixel))"
