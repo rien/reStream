@@ -93,7 +93,7 @@ rm_version="$(ssh_cmd cat /sys/devices/soc0/machine)"
 rm2_getpointer() {
     xochitl_version="$(ssh_cmd "sed -n 's/^REMARKABLE_RELEASE_VERSION=//p' /usr/share/remarkable/update.conf")"
     case "$xochitl_version" in
-        "2.3.*")
+        "2.3."*)
             echo "4121024"
             ;;
         "2.4.*")
