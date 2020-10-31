@@ -90,16 +90,27 @@ rm2_getpointer() {
         "2.3."*)
             echo "4121024"
             ;;
-        "2.4.*")
-            # TODO
-            echo "???"
-            ;;
         *) # use last known version if we cannot find a match
             echo "WARNING: unknown reMarkable 2 release version" >&2
             echo "consider updating if reStream doesn't work" >&2
-            echo "???"
+            echo "4121024"
             ;;
     esac
+}
+
+# Print the instruction for reading a memory location.
+# Using dd with bs=1 is too slow, so we first carve out the pages our desired
+# bytes are located in, and then we trim the resulting data with what we need.
+memread_instr() {
+    page_size=4096
+    ifile="$1"  # input (device) file
+    offset="$2" # offset in bytes to start reading
+    count="$3"  # byte count to read
+
+    window_start_blocks="$((offset / page_size))"
+    window_skip_bytes="$((offset % page_size))"
+    window_length_blocks="$((count / page_size + 1))"
+    "dd if=$ifile bs=$page_size skip=$window_start_blocks count=$window_length_blocks 2>/dev/null | dd if=/dev/stdin skip=$window_skip_bytes bs=$count count=1 2>/dev/null"
 }
 
 case "$rm_version" in
@@ -114,18 +125,18 @@ case "$rm_version" in
         head_fb0="dd if=/dev/fb0 count=1 bs=$window_bytes 2>/dev/null"
         ;;
     "reMarkable 2.0")
-        width=1404
-        height=1872
+        width=1872
+        height=1404
         bytes_per_pixel=1
         pixel_format="gray8"
         pid="$(ssh_cmd pidof xochitl)"
         pointer="$(rm2_getpointer)"
-        read_address="addr=\$(dd if=/proc/$pid/mem bs=1 count=4 skip=$pointer 2>/dev/null | hexdump | awk '{print \$3\$2}') && printf '%d' \$((16#\$addr))"
-        skipbytes="$(ssh_cmd "$read_address")"
+        read_address="addr=\$($(memread_instr "/proc/$pid/mem" "$pointer" 4) | hexdump | awk '{print \$3\$2}') && printf '%d' \$((16#\$addr))"
+        skip_bytes="$(ssh_cmd "$read_address")"
         # calculate how much bytes the window is
         window_bytes="$((width * height * bytes_per_pixel))"
         # carve the framebuffer out of the process memory
-        head_fb0="dd if=/proc/$pid/mem bs=1 count=$window_bytes skip=$skipbytes 2>/dev/null"
+        head_fb0="$(memread_instr "/proc/$pid/mem" "$skip_bytes" "$window_bytes")"
         ;;
     *)
         echo "Unsupported reMarkable version: $rm_version."
