@@ -70,6 +70,7 @@ while [ $# -gt 0 ]; do
 done
 
 ssh_cmd() {
+    echo "[SSH]" "$@" >&2
     ssh -o ConnectTimeout=1 "$ssh_host" "$@"
 }
 
@@ -80,38 +81,6 @@ if ! ssh_cmd true; then
 fi
 
 rm_version="$(ssh_cmd cat /sys/devices/soc0/machine)"
-
-# We cannot read the framebuffer directory in the reMarkable 2, but we know the
-# address of the pointer to the framebuffer for some reMarkable 2 versions.
-# This will need to be changed each time xochitl updates.
-rm2_getpointer() {
-    xochitl_version="$(ssh_cmd "sed -n 's/^REMARKABLE_RELEASE_VERSION=//p' /usr/share/remarkable/update.conf")"
-    case "$xochitl_version" in
-        "2.3."*)
-            echo "4121024"
-            ;;
-        *) # use last known version if we cannot find a match
-            echo "WARNING: unknown reMarkable 2 release version" >&2
-            echo "consider updating if reStream doesn't work" >&2
-            echo "4121024"
-            ;;
-    esac
-}
-
-# Print the instruction for reading a memory location.
-# Using dd with bs=1 is too slow, so we first carve out the pages our desired
-# bytes are located in, and then we trim the resulting data with what we need.
-memread_instr() {
-    page_size=4096
-    ifile="$1"  # input (device) file
-    offset="$2" # offset in bytes to start reading
-    count="$3"  # byte count to read
-
-    window_start_blocks="$((offset / page_size))"
-    window_skip_bytes="$((offset % page_size))"
-    window_length_blocks="$((count / page_size + 1))"
-    "dd if=$ifile bs=$page_size skip=$window_start_blocks count=$window_length_blocks 2>/dev/null | dd if=/dev/stdin skip=$window_skip_bytes bs=$count count=1 2>/dev/null"
-}
 
 case "$rm_version" in
     "reMarkable 1.0")
@@ -125,18 +94,34 @@ case "$rm_version" in
         head_fb0="dd if=/dev/fb0 count=1 bs=$window_bytes 2>/dev/null"
         ;;
     "reMarkable 2.0")
+        pixel_format="gray8"
         width=1872
         height=1404
         bytes_per_pixel=1
-        pixel_format="gray8"
-        pid="$(ssh_cmd pidof xochitl)"
-        pointer="$(rm2_getpointer)"
-        read_address="addr=\$($(memread_instr "/proc/$pid/mem" "$pointer" 4) | hexdump | awk '{print \$3\$2}') && printf '%d' \$((16#\$addr))"
-        skip_bytes="$(ssh_cmd "$read_address")"
+
         # calculate how much bytes the window is
         window_bytes="$((width * height * bytes_per_pixel))"
+
+        # find xochitl's process
+        pid="$(ssh_cmd pidof xochitl)"
+        echo "xochitl's PID: $pid"
+
+        # find framebuffer location in memory
+        # it is actually the map allocated _after_ the fb0 mmap
+        read_address="grep -C1 '/dev/fb0' /proc/$pid/maps | tail -n1 | sed 's/-.*$//'"
+        skip_bytes_hex="$(ssh_cmd "$read_address")"
+        skip_bytes="$((0x$skip_bytes_hex))"
+        echo "framebuffer is at 0x$skip_bytes_hex"
+
         # carve the framebuffer out of the process memory
-        head_fb0="$(memread_instr "/proc/$pid/mem" "$skip_bytes" "$window_bytes")"
+        page_size=4096
+        window_start_blocks="$((skip_bytes / page_size))"
+        window_offset="$((skip_bytes % page_size))"
+        window_length_blocks="$((window_bytes / page_size + 1))"
+
+        # Using dd with bs=1 is too slow, so we first carve out the pages our desired
+        # bytes are located in, and then we trim the resulting data with what we need.
+        head_fb0="dd if=/proc/$pid/mem bs=$page_size skip=$window_start_blocks count=$window_length_blocks 2>/dev/null | dd if=/dev/stdin skip=$window_offset bs=1 count=$window_bytes 2>/dev/null"
         ;;
     *)
         echo "Unsupported reMarkable version: $rm_version."
