@@ -116,7 +116,7 @@ case "$rm_version" in
         # it is actually the map allocated _after_ the fb0 mmap
         read_address="grep -C1 '/dev/fb0' /proc/$pid/maps | tail -n1 | sed 's/-.*$//'"
         skip_bytes_hex="$(ssh_cmd "$read_address")"
-        skip_bytes="$((0x$skip_bytes_hex))"
+        skip_bytes="$((0x$skip_bytes_hex + 8))"
         echo "framebuffer is at 0x$skip_bytes_hex"
 
         # carve the framebuffer out of the process memory
@@ -127,7 +127,7 @@ case "$rm_version" in
 
         # Using dd with bs=1 is too slow, so we first carve out the pages our desired
         # bytes are located in, and then we trim the resulting data with what we need.
-        head_fb0="dd if=/proc/$pid/mem bs=$page_size skip=$window_start_blocks count=$window_length_blocks 2>/dev/null | dd if=/dev/stdin skip=$window_offset bs=1 count=$window_bytes 2>/dev/null"
+        head_fb0="dd if=/proc/$pid/mem bs=$page_size skip=$window_start_blocks count=$window_length_blocks 2>/dev/null | tail -c+$window_offset | head -c $window_bytes"
         ;;
     *)
         echo "Unsupported reMarkable version: $rm_version."
