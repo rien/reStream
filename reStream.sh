@@ -173,6 +173,8 @@ set -- "$@" -vf "${video_filters#,}"
 
 if [ "$output_path" = - ]; then
     output_cmd=ffplay
+
+    window_title_option="-window_title $window_title"
 else
     output_cmd=ffmpeg
 
@@ -195,6 +197,6 @@ ssh_cmd "$read_loop" \
         -f rawvideo \
         -pixel_format rgb565le \
         -video_size "$width,$height" \
-        -window_title "$window_title" \
+        $window_title_option \
         -i - \
         "$@"
