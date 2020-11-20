@@ -29,6 +29,7 @@ reMarkable screen sharing over SSH.
 - `-f --format`: when recording to an output, this option is used to force the encoding format; if this is `-`, `ffmpeg`’s auto format detection based on the file extension is used (default: `-`).
 - `-w --webcam`: record to a video4linux2 web cam device. By default the first found web cam is taken, this can be overwritten with `-o`. The video is scaled to 1280x720 to ensure compatibility with MS Teams, Skype for business and other programs which need this specific format.
 - `-t --throughput`: use `pv` to measure how much data throughput you have (good to experiment with parameters to speed up the pipeline)
+- `--window_title`: set a custom window title for the video stream. The default title is "reStream". This option is disabled when using `-o --output`
 
 If you have problems, don't hesitate to [open an issue](https://github.com/rien/reStream/issues/new) or [send me an email](mailto:rien.maertens@posteo.be).
 
