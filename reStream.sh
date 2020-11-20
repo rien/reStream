@@ -7,7 +7,7 @@ output_path=-              # display output through ffplay
 format=-                   # automatic output format
 webcam=false               # not to a webcam
 measure_throughput=false   # measure how fast data is being transferred
-window_tile=reStream       # stream windoe title is reStream
+window_title=reStream      # stream window title is reStream
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
