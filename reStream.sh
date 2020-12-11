@@ -142,7 +142,7 @@ $landscape && video_filters="$video_filters,transpose=1"
 # for business). Send a PR is you can get a heigher resolution working.
 if $webcam; then
     video_filters="$video_filters,format=pix_fmts=yuv420p"
-    video_filters="$video_filters,scale=-1:720"            
+    video_filters="$video_filters,scale=-1:720"
     video_filters="$video_filters,pad=1280:0:-1:0:#eeeeee"
 fi
 
