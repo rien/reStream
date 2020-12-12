@@ -1,0 +1,9 @@
+[package]
+name = "restream"
+version = "0.1.0"
+authors = ["Rien Maertens <rien.maertens@posteo.be>"]
+edition = "2018"
+
+[dependencies]
+anyhow = "1.0"
+lz-fear = "0.1"
