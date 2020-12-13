@@ -23,7 +23,7 @@ fn main() -> Result<()> {
         let bytes_per_pixel = 1;
 
         let pid = xochitl_pid()?;
-        let offset = fb_start(pid)?;
+        let offset = rm2_fb_offset(pid)?;
         let mem = format!("/proc/{}/mem", pid);
         ReStreamer::init(&mem, offset, width, height, bytes_per_pixel)?
     } else {
@@ -51,9 +51,10 @@ fn xochitl_pid() -> Result<usize> {
         .context("Failed to run `/bin/pidof xochitl`")?;
     if output.status.success() {
         let pid = &output.stdout;
-        std::str::from_utf8(pid)?
+        let pid_str = std::str::from_utf8(pid)?.trim();
+        pid_str
             .parse()
-            .with_context(|| format!("Failed to parse xochitl's pid: {:?}", pid))
+            .with_context(|| format!("Failed to parse xochitl's pid: {}", pid_str))
     } else {
         Err(anyhow!(
             "Could not find pid of xochitl, is xochitl running?"
@@ -61,12 +62,12 @@ fn xochitl_pid() -> Result<usize> {
     }
 }
 
-fn fb_start(pid: usize) -> Result<usize> {
+fn rm2_fb_offset(pid: usize) -> Result<usize> {
     let file = File::open(format!("/proc/{}/maps", &pid))?;
     let line = BufReader::new(file)
         .lines()
-        .skip_while(|line| matches!(line, Ok(l) if l.ends_with("/dev/fb0")))
-        //.skip(1)
+        .skip_while(|line| matches!(line, Ok(l) if !l.ends_with("/dev/fb0")))
+        .skip(1)
         .next()
         .with_context(|| format!("No line containing /dev/fb0 in /proc/{}/maps file", pid))?
         .with_context(|| format!("Error reading file /proc/{}/maps", pid))?;
@@ -76,7 +77,8 @@ fn fb_start(pid: usize) -> Result<usize> {
         .next()
         .with_context(|| format!("Error parsing line in /proc/{}/maps", pid))?;
 
-    usize::from_str_radix(addr, 16).context("Error parsing framebuffer address")
+    let address = usize::from_str_radix(addr, 16).context("Error parsing framebuffer address")?;
+    Ok(address + 8)
 }
 
 pub struct ReStreamer {
