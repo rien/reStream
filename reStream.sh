@@ -142,16 +142,8 @@ $landscape && video_filters="$video_filters,transpose=1"
 # for business). Send a PR is you can get a heigher resolution working.
 if $webcam; then
     video_filters="$video_filters,format=pix_fmts=yuv420p"
-    if $landscape; then
-        render_width=$((720 * height / width))
-    else
-        render_width=$((720 * width / height))
-    fi
-
-    # center
-    offset_left=$(((1280 - render_width) / 2))
-    video_filters="$video_filters,scale=${render_width}x720"
-    video_filters="$video_filters,pad=1280:720:$offset_left:0:#eeeeee"
+    video_filters="$video_filters,scale=-1:720"
+    video_filters="$video_filters,pad=1280:0:-1:0:#eeeeee"
 fi
 
 # set each frame presentation time to the time it is received
