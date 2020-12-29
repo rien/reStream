@@ -11,7 +11,12 @@ reMarkable screen sharing over SSH.
 
 1. Clone this repository: `git clone https://github.com/rien/reStream`.
 2. (Optional but recommended) [Install lz4 on your host and reMarkable](#sub-second-latency).
-3. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`.
+3. Copy the `reDump` program to your reMarkable and  make it executable with:
+```bash
+scp reDump.remarkable.shared root@10.11.99.1:/home/root/reDump
+ssh root@10.11.99.1 'chmod +x /home/root/reDump'
+```
+4. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`.
 
 ## Usage
 
