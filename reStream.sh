@@ -114,10 +114,10 @@ decompress="lz4 -d"
 
 # check if lz4 is present on the host
 if ! lz4 -V >/dev/null; then
-   echo "Your host does not have lz4."
-   echo "Please install it using the instruction in the README:"
-   echo "https://github.com/rien/reStream/#installation"
-   exit 1
+    echo "Your host does not have lz4."
+    echo "Please install it using the instruction in the README:"
+    echo "https://github.com/rien/reStream/#installation"
+    exit 1
 fi
 
 # check if restream binay is present on remarkable
