@@ -92,42 +92,14 @@ case "$rm_version" in
     "reMarkable 1.0")
         width=1408
         height=1872
-        bytes_per_pixel=2
         pixel_format="rgb565le"
-        # calculate how much bytes the window is
-        window_bytes="$((width * height * bytes_per_pixel))"
-        # read the first $window_bytes of the framebuffer
-        head_fb0="dd if=/dev/fb0 count=1 bs=$window_bytes 2>/dev/null"
+        transpose=0
         ;;
     "reMarkable 2.0")
         pixel_format="gray8"
         width=1872
         height=1404
-        bytes_per_pixel=1
-
-        # calculate how much bytes the window is
-        window_bytes="$((width * height * bytes_per_pixel))"
-
-        # find xochitl's process
-        pid="$(ssh_cmd pidof xochitl)"
-        echo "xochitl's PID: $pid"
-
-        # find framebuffer location in memory
-        # it is actually the map allocated _after_ the fb0 mmap
-        read_address="grep -C1 '/dev/fb0' /proc/$pid/maps | tail -n1 | sed 's/-.*$//'"
-        skip_bytes_hex="$(ssh_cmd "$read_address")"
-        skip_bytes="$((0x$skip_bytes_hex + 8))"
-        echo "framebuffer is at 0x$skip_bytes_hex"
-
-        # carve the framebuffer out of the process memory
-        page_size=4096
-        window_start_blocks="$((skip_bytes / page_size))"
-        window_offset="$((skip_bytes % page_size))"
-        window_length_blocks="$((window_bytes / page_size + 1))"
-
-        # Using dd with bs=1 is too slow, so we first carve out the pages our desired
-        # bytes are located in, and then we trim the resulting data with what we need.
-        head_fb0="dd if=/proc/$pid/mem bs=$page_size skip=$window_start_blocks count=$window_length_blocks 2>/dev/null | tail -c+$window_offset | head -c $window_bytes"
+        transpose=1
         ;;
     *)
         echo "Unsupported reMarkable version: $rm_version."
@@ -137,33 +109,23 @@ case "$rm_version" in
 esac
 
 # technical parameters
-loop_wait="true"
 loglevel="info"
+decompress="lz4 -d"
 
-fallback_to_gzip() {
-    echo "Falling back to gzip, your experience may not be optimal."
-    echo "Go to https://github.com/rien/reStream/#sub-second-latency for a better experience."
-    compress="gzip"
-    decompress="gzip -d"
-    sleep 2
-}
-
-# check if lz4 is present on remarkable
-if ssh_cmd "[ -f /opt/bin/lz4 ]"; then
-    compress="/opt/bin/lz4"
-elif ssh_cmd "[ -f ~/lz4 ]"; then
-    compress="\$HOME/lz4"
+# check if lz4 is present on the host
+if ! lz4 -V >/dev/null; then
+   echo "Your host does not have lz4."
+   echo "Please install it using the instruction in the README:"
+   echo "https://github.com/rien/reStream/#installation"
+   exit 1
 fi
 
-# gracefully degrade to gzip if is not present on remarkable or host
-if [ -z "$compress" ]; then
-    echo "Your remarkable does not have lz4."
-    fallback_to_gzip
-elif ! lz4 -V >/dev/null; then
-    echo "Your host does not have lz4."
-    fallback_to_gzip
-else
-    decompress="lz4 -d"
+# check if restream binay is present on remarkable
+if ssh_cmd "[ ! -f ~/restream ]"; then
+    echo "The restream binary is not installed on your reMarkable."
+    echo "Please install it using the instruction in the README:"
+    echo "https://github.com/rien/reStream/#installation"
+    exit 1
 fi
 
 # use pv to measure throughput if desired, else we just pipe through cat
@@ -186,7 +148,8 @@ video_filters=""
 set --
 
 # rotate 90 degrees if landscape=true
-$landscape && video_filters="$video_filters,transpose=1"
+$landscape && transpose="$((transpose + 1))"
+[ $transpose != 0 ] && video_filters="$video_filters,transpose=$transpose"
 
 # Scale and add padding if we are targeting a webcam because a lot of services
 # expect a size of exactly 1280x720 (tested in Firefox, MS Teams, and Skype for
@@ -199,9 +162,6 @@ fi
 
 # set each frame presentation time to the time it is received
 video_filters="$video_filters,setpts=(RTCTIME - RTCSTART) / (TB * 1000000)"
-
-# loop that keeps on reading and compressing, to be executed remotely
-read_loop="while $head_fb0; do $loop_wait; done | $compress"
 
 set -- "$@" -vf "${video_filters#,}"
 
@@ -222,7 +182,7 @@ fi
 set -e # stop if an error occurs
 
 # shellcheck disable=SC2086
-ssh_cmd "$read_loop" \
+ssh_cmd "./restream" \
     | $decompress \
     | $host_passthrough \
     | "$output_cmd" \
