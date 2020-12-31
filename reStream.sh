@@ -31,7 +31,7 @@ while [ $# -gt 0 ]; do
             shift
             shift
             ;;
-        -t | --throughput)
+        -m | --measure)
             measure_throughput=true
             shift
             ;;
@@ -56,13 +56,13 @@ while [ $# -gt 0 ]; do
             fi
             shift
             ;;
-        --window_title)
+        -t | --title)
             window_title="$2"
             shift
             shift
             ;;
         -h | --help | *)
-            echo "Usage: $0 [-p] [-s <source>] [-o <output>] [-f <format>] [--window_title <title>]"
+            echo "Usage: $0 [-p] [-s <source>] [-o <output>] [-f <format>] [-t <title>]"
             echo "Examples:"
             echo "	$0                              # live view in landscape"
             echo "	$0 -p                           # live view in portrait"
