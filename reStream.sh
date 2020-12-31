@@ -7,6 +7,7 @@ output_path=-              # display output through ffplay
 format=-                   # automatic output format
 webcam=false               # not to a webcam
 measure_throughput=false   # measure how fast data is being transferred
+window_title=reStream      # stream window title is reStream
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
@@ -30,7 +31,7 @@ while [ $# -gt 0 ]; do
             shift
             shift
             ;;
-        -t | --throughput)
+        -m | --measure)
             measure_throughput=true
             shift
             ;;
@@ -55,8 +56,13 @@ while [ $# -gt 0 ]; do
             fi
             shift
             ;;
+        -t | --title)
+            window_title="$2"
+            shift
+            shift
+            ;;
         -h | --help | *)
-            echo "Usage: $0 [-p] [-s <source>] [-o <output>] [-f <format>]"
+            echo "Usage: $0 [-p] [-s <source>] [-o <output>] [-f <format>] [-t <title>]"
             echo "Examples:"
             echo "	$0                              # live view in landscape"
             echo "	$0 -p                           # live view in portrait"
@@ -159,6 +165,8 @@ set -- "$@" -vf "${video_filters#,}"
 
 if [ "$output_path" = - ]; then
     output_cmd=ffplay
+
+    window_title_option="-window_title $window_title"
 else
     output_cmd=ffmpeg
 
@@ -181,5 +189,6 @@ ssh_cmd "$read_loop" \
         -f rawvideo \
         -pixel_format rgb565le \
         -video_size "$width,$height" \
+        $window_title_option \
         -i - \
         "$@"
