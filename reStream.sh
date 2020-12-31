@@ -8,6 +8,7 @@ format=-                   # automatic output format
 webcam=false               # not to a webcam
 measure_throughput=false   # measure how fast data is being transferred
 window_title=reStream      # stream window title is reStream
+video_filters=""           # list of ffmpeg filters to apply
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
@@ -93,13 +94,12 @@ case "$rm_version" in
         width=1408
         height=1872
         pixel_format="rgb565le"
-        transpose=0
         ;;
     "reMarkable 2.0")
         pixel_format="gray8"
         width=1872
         height=1404
-        transpose=1
+        video_filters="$video_filters,transpose=2"
         ;;
     *)
         echo "Unsupported reMarkable version: $rm_version."
@@ -141,15 +141,12 @@ else
     host_passthrough="cat"
 fi
 
-# list of ffmpeg filters to apply
-video_filters=""
 
 # store extra ffmpeg arguments in $@
 set --
 
 # rotate 90 degrees if landscape=true
-$landscape && transpose="$((transpose + 1))"
-[ $transpose != 0 ] && video_filters="$video_filters,transpose=$transpose"
+$landscape && video_filters="$video_filters,transpose=1"
 
 # Scale and add padding if we are targeting a webcam because a lot of services
 # expect a size of exactly 1280x720 (tested in Firefox, MS Teams, and Skype for
