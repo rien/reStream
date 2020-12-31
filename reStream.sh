@@ -153,7 +153,7 @@ $landscape && transpose="$((transpose + 1))"
 
 # Scale and add padding if we are targeting a webcam because a lot of services
 # expect a size of exactly 1280x720 (tested in Firefox, MS Teams, and Skype for
-# for business). Send a PR is you can get a heigher resolution working.
+# for business). Send a PR if you can get a higher resolution working.
 if $webcam; then
     video_filters="$video_filters,format=pix_fmts=yuv420p"
     video_filters="$video_filters,scale=-1:720"
