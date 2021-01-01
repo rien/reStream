@@ -12,26 +12,24 @@ use std::io::{BufRead, BufReader, Read, Seek, SeekFrom};
 use std::process::Command;
 
 fn main() -> Result<()> {
-    let version = remarkable_version()?;
-    let streamer = if CURRENT_DEVICE.model == Model::Gen1 {
-        let width = 1408;
-        let height = 1872;
-        let bytes_per_pixel = 2;
-        ReStreamer::init("/dev/fb0", 0, width, height, bytes_per_pixel)?
-    } else if CURRENT_DEVICE.model == Model::Gen2 {
-        let width = 1404;
-        let height = 1872;
-        let bytes_per_pixel = 1;
+    let streamer = match CURRENT_DEVICE.model {
+        Model::Gen1 => {
+            let width = 1408;
+            let height = 1872;
+            let bytes_per_pixel = 2;
+            ReStreamer::init("/dev/fb0", 0, width, height, bytes_per_pixel)?
+        },
+        Model::Gen2 => {
+            let width = 1404;
+            let height = 1872;
+            let bytes_per_pixel = 1;
 
-        let pid = xochitl_pid()?;
-        let offset = rm2_fb_offset(pid)?;
-        let mem = format!("/proc/{}/mem", pid);
-        ReStreamer::init(&mem, offset, width, height, bytes_per_pixel)?
-    } else {
-        Err(anyhow!(
-            "Unknown reMarkable version: {}\nPlease open a feature request to support your device.",
-            version
-        ))?
+            let pid = xochitl_pid()?;
+            let offset = rm2_fb_offset(pid)?;
+            let mem = format!("/proc/{}/mem", pid);
+            ReStreamer::init(&mem, offset, width, height, bytes_per_pixel)?
+        },
+        Model::Unknown => unreachable!()
     };
 
     let lz4: CompressionSettings = Default::default();
