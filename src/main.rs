@@ -37,12 +37,6 @@ fn main() -> Result<()> {
         .context("Error while compressing framebuffer stream")
 }
 
-fn remarkable_version() -> Result<String> {
-    let content = std::fs::read("/sys/devices/soc0/machine")
-        .context("Failed to read /sys/devices/soc0/machine")?;
-    Ok(String::from_utf8(content)?)
-}
-
 fn xochitl_pid() -> Result<usize> {
     let output = Command::new("/bin/pidof")
         .args(&["xochitl"])
