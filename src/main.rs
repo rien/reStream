@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate anyhow;
-extern crate lz_fear;
 
 use anyhow::{Context, Result};
 use libremarkable::device::{CURRENT_DEVICE, Model};
