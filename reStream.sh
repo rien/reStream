@@ -141,7 +141,6 @@ else
     host_passthrough="cat"
 fi
 
-
 # store extra ffmpeg arguments in $@
 set --
 
