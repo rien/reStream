@@ -3,6 +3,7 @@ extern crate anyhow;
 extern crate lz_fear;
 
 use anyhow::{Context, Result};
+use libremarkable::device::{CURRENT_DEVICE, Model};
 use lz_fear::CompressionSettings;
 
 use std::default::Default;
@@ -12,12 +13,12 @@ use std::process::Command;
 
 fn main() -> Result<()> {
     let version = remarkable_version()?;
-    let streamer = if version == "reMarkable 1.0\n" {
+    let streamer = if CURRENT_DEVICE.model == Model::Gen1 {
         let width = 1408;
         let height = 1872;
         let bytes_per_pixel = 2;
         ReStreamer::init("/dev/fb0", 0, width, height, bytes_per_pixel)?
-    } else if version == "reMarkable 2.0\n" {
+    } else if CURRENT_DEVICE.model == Model::Gen2 {
         let width = 1404;
         let height = 1872;
         let bytes_per_pixel = 1;

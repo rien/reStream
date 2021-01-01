@@ -6,4 +6,5 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0"
+libremarkable = "0.4"
 lz-fear = "0.1"
