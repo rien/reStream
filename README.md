@@ -14,9 +14,18 @@ reMarkable screen sharing over SSH.
 `apt install liblz4-tool` will do the trick.
 3. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`. **Note:** the reMarkable 2 doesn't support `ed25519` keys, those users should generate and `rsa` key.
 4. Copy the `restream` executable to the reMarkable and make it executable.
+
     ```
     # scp restream.arm.static root@10.11.99.1:/home/root/restream
     # ssh root@10.11.99.1 'chmod +x /home/root/restream'
+    ```
+
+    --or--
+
+    Install via [toltec](https://github.com/toltec-dev/toltec) if you use it (currently in the [testing branch](https://github.com/toltec-dev/toltec/blob/testing/docs/branches.md)).
+
+    ```
+    # ssh root@10.11.99.1 'opkg install restream'
     ```
 
 ## Usage
@@ -42,6 +51,7 @@ If you have problems, don't hesitate to [open an issue](https://github.com/rien/
 ## Requirements
 
 On your **host** machine:
+
 - Any POSIX-shell (e.g. bash)
 - ffmpeg (with ffplay)
 - ssh
@@ -59,13 +69,13 @@ apt install v4l2loopback-utils v4l2loopback-dkms
 
 In some package managers `v4l2loopback-utils` is found in `v4l-utils`.
 
-After installing the module you must enable it with 
+After installing the module you must enable it with
 
 ```
 modprobe v4l2loopback
 ```
 
-To verify that this worked, execute: 
+To verify that this worked, execute:
 
 ```
 v4l2-ctl --list-devices
@@ -76,6 +86,7 @@ The result should contain a line with "platform:v4l2loopback".
 ## Troubleshooting
 
 Steps you can try if the script isn't working:
+
 - [Set up an SSH key](#installation)
 - Update `ffmpeg` to version 4.
 
