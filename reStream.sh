@@ -185,7 +185,7 @@ fi
 
 set -e # stop if an error occurs
 
-# shellcheck disable=SC2086
+# shellcheck disable=SC2086,SC2016
 ssh_cmd 'PATH="$PATH:/opt/bin/:." restream' \
     | $decompress \
     | $host_passthrough \
