@@ -12,7 +12,7 @@ reMarkable screen sharing over SSH.
 1. Clone this repository: `git clone https://github.com/rien/reStream`.
 2. Install `lz4` on your host with your usual package manager. On Ubuntu,
 `apt install liblz4-tool` will do the trick.
-3. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`.
+3. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`. **Note:** the reMarkable 2 doesn't support `ed25519` keys, those users should generate and `rsa` key.
 4. Copy the `restream` executable to the reMarkable and make it executable.
     ```
     # scp restream.arm.static root@10.11.99.1:/home/root/restream

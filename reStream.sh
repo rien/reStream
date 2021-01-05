@@ -78,12 +78,14 @@ done
 
 ssh_cmd() {
     echo "[SSH]" "$@" >&2
-    ssh -o ConnectTimeout=1 "$ssh_host" "$@"
+    ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "$ssh_host" "$@"
 }
 
 # check if we are able to reach the remarkable
 if ! ssh_cmd true; then
-    echo "$ssh_host unreachable"
+    echo "$ssh_host unreachable or you have not set up an ssh key."
+    echo "If you see a 'Permission denied' error, please visit"
+    echo "https://github.com/rien/reStream/#installation for instructions."
     exit 1
 fi
 
