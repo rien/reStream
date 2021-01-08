@@ -9,6 +9,7 @@ webcam=false               # not to a webcam
 measure_throughput=false   # measure how fast data is being transferred
 window_title=reStream      # stream window title is reStream
 video_filters=""           # list of ffmpeg filters to apply
+unsecure_connection=false  # Establish a unsecure connection that is faster
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
@@ -62,8 +63,12 @@ while [ $# -gt 0 ]; do
             shift
             shift
             ;;
+        -u | --unsecure-connection)
+            unsecure_connection=true
+            shift
+            ;;
         -h | --help | *)
-            echo "Usage: $0 [-p] [-s <source>] [-o <output>] [-f <format>] [-t <title>]"
+            echo "Usage: $0 [-p] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>]"
             echo "Examples:"
             echo "	$0                              # live view in landscape"
             echo "	$0 -p                           # live view in portrait"
@@ -71,6 +76,7 @@ while [ $# -gt 0 ]; do
             echo "	$0 -o remarkable.mp4            # record to a file"
             echo "	$0 -o udp://dest:1234 -f mpegts # record to a stream"
             echo "  $0 -w                           # write to a webcam (yuv420p + resize)"
+            echo "  $0 -u                           # establish a unsecure but faster connection"
             exit 1
             ;;
     esac
@@ -179,8 +185,18 @@ fi
 
 set -e # stop if an error occurs
 
+receive_cmd="ssh_cmd ./restream"
+#echo './restream --connect "$(echo $SSH_CLIENT | cut -d " " -f1):61819"'
+#receive_cmd="ssh_cmd 'echo ABC $(echo $SSH_CLIENT | cut -d " " -f1):61819' & ; nc -l -p 61819"
+
+if $unsecure_connection; then
+  echo "Spawning unsecure connection"
+  ssh_cmd 'sleep 0.25 && ./restream --connect "$(echo $SSH_CLIENT | cut -d " " -f1):61819"' &
+  receive_cmd="nc -l -p 61819"
+fi
+
 # shellcheck disable=SC2086
-ssh_cmd "./restream" \
+$receive_cmd \
     | $decompress \
     | $host_passthrough \
     | "$output_cmd" \

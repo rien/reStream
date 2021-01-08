@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0"
 lz-fear = "0.1"
+clap = "3.0.0-beta.2"

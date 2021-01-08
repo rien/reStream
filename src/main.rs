@@ -3,14 +3,29 @@ extern crate anyhow;
 extern crate lz_fear;
 
 use anyhow::{Context, Result};
+use clap::{crate_authors, crate_version, Clap};
 use lz_fear::CompressionSettings;
 
 use std::default::Default;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read, Seek, SeekFrom};
+use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
 use std::process::Command;
 
+#[derive(Clap)]
+#[clap(version = crate_version!(), author = crate_authors!())]
+pub struct Opts {
+    #[clap(
+        long,
+        name = "address",
+        short = 'c',
+        about = "Establish a new unsecure connection to send the data to which reduces some load on the reMarkable and improves fps."
+    )]
+    connect: Option<String>,
+}
+
 fn main() -> Result<()> {
+    let ref opts: Opts = Opts::parse();
+
     let version = remarkable_version()?;
     let streamer = if version == "reMarkable 1.0\n" {
         let width = 1408;
@@ -33,8 +48,18 @@ fn main() -> Result<()> {
         ))?
     };
 
+    let stdout = std::io::stdout();
+    let data_target: Box<dyn Write> = if let Some(ref address) = opts.connect {
+        eprintln!("[rM] Sending stream to {} (instead of stdout)", address);
+        let conn = std::net::TcpStream::connect(address)?;
+        conn.set_write_timeout(Some(std::time::Duration::from_secs(3)))?;
+        Box::new(conn)
+    } else {
+        Box::new(stdout.lock())
+    };
+
     let lz4: CompressionSettings = Default::default();
-    lz4.compress(streamer, std::io::stdout().lock())
+    lz4.compress(streamer, data_target)
         .context("Error while compressing framebuffer stream")
 }
 
