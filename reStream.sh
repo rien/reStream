@@ -214,7 +214,7 @@ fi
 $receive_cmd \
     | $decompress \
     | $host_passthrough \
-    | "$output_cmd" \
+    | ("$output_cmd" \
         -vcodec rawvideo \
         -loglevel "$loglevel" \
         -f rawvideo \
@@ -222,4 +222,6 @@ $receive_cmd \
         -video_size "$width,$height" \
         $window_title_option \
         -i - \
-        "$@"
+        "$@" \
+        ; kill $$
+    )
