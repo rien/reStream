@@ -9,15 +9,33 @@ reMarkable screen sharing over SSH.
 
 ## Installation
 
-1. Clone this repository: `git clone https://github.com/rien/reStream`.
-2. Install `lz4` on your host with your usual package manager. On Ubuntu,
+### Unix
+
+1. Install `lz4` on your host with your usual package manager. On Ubuntu,
 `apt install liblz4-tool` will do the trick.
-3. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`. **Note:** the reMarkable 2 doesn't support `ed25519` keys, those users should generate and `rsa` key.
+2. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`. **Note:** the reMarkable 2 doesn't support `ed25519` keys, those users should generate and `rsa` key. Try out `ssh root@10.11.99.1`, it should **not** prompt for a password.
+3. Clone this repository: `git clone https://github.com/rien/reStream`.
 4. Copy the `restream` executable to the reMarkable and make it executable.
     ```
     # scp restream.arm.static root@10.11.99.1:/home/root/restream
     # ssh root@10.11.99.1 'chmod +x /home/root/restream'
     ```
+
+### Windows
+
+1. Install [git for windows](https://gitforwindows.org/), which includes `Git BASH`.
+2. Install [ffmpeg for windows](https://ffmpeg.org/download.html#build-windows).
+3. Download [lz4 for windows](https://github.com/lz4/lz4/releases) and extract the `zip` to a folder where you'll remember it (e.g. `C:\Users\{username}\lz4`).
+4. Add the `ffmpeg` **and** `lz4` directories to the windows `Path` environment. [Here is a quick guide how.](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/)
+    - Control Panel > Edit the system environment variables > Environment Variables
+    - Find the `Path` variable under System variables, click edit.
+    - Add two _New_ entries: one to the **bin** directory in the `ffmpeg` directory, and one to the `lz4` directory you created.
+    - Click OK
+5. (Re)start `bash` so the new `Path` is used.
+6. Generate a new ssh key using `ssh-keygen`.
+7. Send the public key to the reMarkable (connect trough USB cable) using `ssh-copy-id -i ~/.ssh/id_rsa root@10.11.99.1`
+8. Try out `ssh root@10.11.99.1`, it should **not** prompt for a password.
+9. Go to step **3** of [the Unix installation instructions](#Unix).
 
 ## Usage
 
