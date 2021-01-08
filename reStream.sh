@@ -183,7 +183,7 @@ set -e # stop if an error occurs
 ssh_cmd "./restream" \
     | $decompress \
     | $host_passthrough \
-    | "$output_cmd" \
+    | ("$output_cmd" \
         -vcodec rawvideo \
         -loglevel "$loglevel" \
         -f rawvideo \
@@ -191,4 +191,6 @@ ssh_cmd "./restream" \
         -video_size "$width,$height" \
         $window_title_option \
         -i - \
-        "$@"
+        "$@" \
+        ; kill $$
+    )
