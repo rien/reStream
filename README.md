@@ -24,7 +24,7 @@ reMarkable screen sharing over SSH.
 
     --or--
 
-    Install via [toltec](https://github.com/toltec-dev/toltec) if you use it (currently in the [testing branch](https://github.com/toltec-dev/toltec/blob/testing/docs/branches.md)).
+    Install via [toltec](https://github.com/toltec-dev/toltec) if you use it.
 
     ```
     # ssh root@10.11.99.1 'opkg install restream'
