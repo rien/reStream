@@ -104,10 +104,16 @@ case "$rm_version" in
         pixel_format="rgb565le"
         ;;
     "reMarkable 2.0")
-        pixel_format="gray8"
-        width=1872
-        height=1404
-        video_filters="$video_filters,transpose=2"
+        if ssh_cmd "[ -f /dev/shm/swtfb.01 ]"; then
+            width=1404
+            height=1872
+            pixel_format="rgb565le"
+        else
+            width=1872
+            height=1404
+            pixel_format="gray8"
+            video_filters="$video_filters,transpose=2"
+        fi
         ;;
     *)
         echo "Unsupported reMarkable version: $rm_version."
@@ -129,7 +135,7 @@ if ! lz4 -V >/dev/null; then
 fi
 
 # check if restream binay is present on remarkable
-if ssh_cmd "[ ! -f ~/restream ]"; then
+if ssh_cmd "[ ! -f ~/restream ] && [ ! -f /opt/bin/restream ]"; then
     echo "The restream binary is not installed on your reMarkable."
     echo "Please install it using the instruction in the README:"
     echo "https://github.com/rien/reStream/#installation"
@@ -185,13 +191,15 @@ fi
 
 set -e # stop if an error occurs
 
+restream_rs='PATH="$PATH:/opt/bin/:." restream'
+
 if $unsecure_connection; then
     listen_port=16789
-    ssh_cmd "./restream --listen $listen_port" &
+    ssh_cmd "$restream_rs --listen $listen_port" &
     sleep 1 # give some time to restream.rs to start listening
     receive_cmd="nc 10.11.99.1 $listen_port"
 else
-    receive_cmd="ssh_cmd ./restream"
+    receive_cmd="ssh_cmd $restream_rs"
 fi
 
 # shellcheck disable=SC2086
