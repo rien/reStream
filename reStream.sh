@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # default values for arguments
-ssh_host="root@10.11.99.1" # remarkable connected through USB
+remarkable="10.11.99.1"    # remarkable connected through USB
 landscape=true             # rotate 90 degrees to the right
 output_path=-              # display output through ffplay
 format=-                   # automatic output format
@@ -19,7 +19,7 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         -s | --source)
-            ssh_host="$2"
+            remarkable="$2"
             shift
             shift
             ;;
@@ -84,12 +84,12 @@ done
 
 ssh_cmd() {
     echo "[SSH]" "$@" >&2
-    ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "$ssh_host" "$@"
+    ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "root@$remarkable" "$@"
 }
 
 # check if we are able to reach the remarkable
 if ! ssh_cmd true; then
-    echo "$ssh_host unreachable or you have not set up an ssh key."
+    echo "$remarkable unreachable or you have not set up an ssh key."
     echo "If you see a 'Permission denied' error, please visit"
     echo "https://github.com/rien/reStream/#installation for instructions."
     exit 1
@@ -185,14 +185,13 @@ fi
 
 set -e # stop if an error occurs
 
-receive_cmd="ssh_cmd ./restream"
-#echo './restream --connect "$(echo $SSH_CLIENT | cut -d " " -f1):61819"'
-#receive_cmd="ssh_cmd 'echo ABC $(echo $SSH_CLIENT | cut -d " " -f1):61819' & ; nc -l -p 61819"
-
 if $unsecure_connection; then
-  echo "Spawning unsecure connection"
-  ssh_cmd 'sleep 0.25 && ./restream --connect "$(echo $SSH_CLIENT | cut -d " " -f1):61819"' &
-  receive_cmd="nc -l -p 61819"
+    listen_port=16789
+    ssh_cmd "./restream --listen $listen_port" &
+    sleep 1 # give some time to restream.rs to start listening
+    receive_cmd="nc 10.11.99.1 $listen_port"
+else
+    receive_cmd="ssh_cmd ./restream"
 fi
 
 # shellcheck disable=SC2086

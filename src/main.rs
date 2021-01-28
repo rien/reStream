@@ -9,18 +9,22 @@ use lz_fear::CompressionSettings;
 use std::default::Default;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
+use std::net::{TcpStream, TcpListener};
 use std::process::Command;
+use std::time::Duration;
+use std::thread;
+use std::sync::mpsc::channel;
 
 #[derive(Clap)]
 #[clap(version = crate_version!(), author = crate_authors!())]
 pub struct Opts {
     #[clap(
         long,
-        name = "address",
-        short = 'c',
-        about = "Establish a new unsecure connection to send the data to which reduces some load on the reMarkable and improves fps."
+        name = "port",
+        short = 'l',
+        about = "Listen for an (unsecure) TCP connection to send the data to which reduces some load on the reMarkable and improves fps."
     )]
-    connect: Option<String>,
+    listen: Option<usize>,
 }
 
 fn main() -> Result<()> {
@@ -49,11 +53,8 @@ fn main() -> Result<()> {
     };
 
     let stdout = std::io::stdout();
-    let data_target: Box<dyn Write> = if let Some(ref address) = opts.connect {
-        eprintln!("[rM] Sending stream to {} (instead of stdout)", address);
-        let conn = std::net::TcpStream::connect(address)?;
-        conn.set_write_timeout(Some(std::time::Duration::from_secs(3)))?;
-        Box::new(conn)
+    let data_target: Box<dyn Write> = if let Some(port) = opts.listen {
+        Box::new(listen_timeout(port, Duration::from_secs(3))?)
     } else {
         Box::new(stdout.lock())
     };
@@ -61,6 +62,23 @@ fn main() -> Result<()> {
     let lz4: CompressionSettings = Default::default();
     lz4.compress(streamer, data_target)
         .context("Error while compressing framebuffer stream")
+}
+
+fn listen_timeout(port: usize, timeout: Duration) -> Result<TcpStream> {
+    let listen_addr = format!("0.0.0.0:{}", port);
+    let listen = TcpListener::bind(&listen_addr)?;
+    eprintln!("[rM] listening for a TCP connection on {}", listen_addr);
+
+    let (tx, rx) = channel();
+    thread::spawn(move || {
+        tx.send(listen.accept()).unwrap();
+    });
+
+    let (conn, conn_addr) = rx.recv_timeout(timeout)
+        .context("Timeout while waiting for host to connect to reMarkable")??;
+    eprintln!("[rM] connection received from {}", conn_addr);
+    conn.set_write_timeout(Some(timeout))?;
+    Ok(conn)
 }
 
 fn remarkable_version() -> Result<String> {
