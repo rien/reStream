@@ -8,7 +8,6 @@ use lz_fear::CompressionSettings;
 
 use std::default::Default;
 use std::fs::File;
-use std::path::Path;
 use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
 use std::net::{TcpStream, TcpListener};
 use std::process::Command;
@@ -26,35 +25,54 @@ pub struct Opts {
         about = "Listen for an (unsecure) TCP connection to send the data to which reduces some load on the reMarkable and improves fps."
     )]
     listen: Option<usize>,
+
+    #[clap(
+        long,
+        name = "height",
+        short = 'h',
+        about = "Height (in pixels) of the framebuffer."
+    )]
+    height: usize,
+
+    #[clap(
+        long,
+        name = "width",
+        short = 'w',
+        about = "Width (in pixels) of the framebuffer."
+    )]
+    width: usize,
+
+    #[clap(
+        long,
+        name = "bytes",
+        short = 'b',
+        about = "How many bytes represent one pixel in the framebuffer."
+    )]
+    bytes_per_pixel: usize,
+
+    #[clap(
+        long,
+        name = "path",
+        short = 'f',
+        about = "File containing the framebuffer data. If this equals the string ':mem:' it will try to read the framebuffer from xochitl's process memory (rM2 only)."
+    )]
+    file: String,
+
 }
 
 fn main() -> Result<()> {
     let ref opts: Opts = Opts::parse();
 
-    let version = remarkable_version()?;
-    let height = 1872;
-    let streamer = if version == "reMarkable 1.0\n" {
-        let width = 1408;
-        let bytes_per_pixel = 2;
-        ReStreamer::init("/dev/fb0", 0, width, height, bytes_per_pixel)?
-    } else if version == "reMarkable 2.0\n" {
-        let width = 1404;
-        if Path::new("/dev/shm/swtfb.01").exists() {
-            let bytes_per_pixel = 2;
-            ReStreamer::init("/dev/shm/swtfb.01", 0, width, height, bytes_per_pixel)?
-        } else {
-            let bytes_per_pixel = 1;
-            let pid = xochitl_pid()?;
-            let offset = rm2_fb_offset(pid)?;
-            let mem = format!("/proc/{}/mem", pid);
-            ReStreamer::init(&mem, offset, width, height, bytes_per_pixel)?
-        }
+    let (file, offset) = if opts.file == ":mem:" {
+        let pid = xochitl_pid()?;
+        let offset = rm2_fb_offset(pid)?;
+        let mem = format!("/proc/{}/mem", pid);
+        (mem, offset)
     } else {
-        Err(anyhow!(
-            "Unknown reMarkable version: {}\nPlease open a feature request to support your device.",
-            version
-        ))?
+        (opts.file.to_owned(), 0)
     };
+
+    let streamer = ReStreamer::init(&file, offset, opts.width, opts.height, opts.bytes_per_pixel)?;
 
     let stdout = std::io::stdout();
     let data_target: Box<dyn Write> = if let Some(port) = opts.listen {
@@ -83,12 +101,6 @@ fn listen_timeout(port: usize, timeout: Duration) -> Result<TcpStream> {
     eprintln!("[rM] connection received from {}", conn_addr);
     conn.set_write_timeout(Some(timeout))?;
     Ok(conn)
-}
-
-fn remarkable_version() -> Result<String> {
-    let content = std::fs::read("/sys/devices/soc0/machine")
-        .context("Failed to read /sys/devices/soc0/machine")?;
-    Ok(String::from_utf8(content)?)
 }
 
 fn xochitl_pid() -> Result<usize> {

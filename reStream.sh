@@ -101,16 +101,22 @@ case "$rm_version" in
     "reMarkable 1.0")
         width=1408
         height=1872
+        bytes_per_pixel=2
+        fb_file="/dev/fb0"
         pixel_format="rgb565le"
         ;;
     "reMarkable 2.0")
         if ssh_cmd "[ -f /dev/shm/swtfb.01 ]"; then
             width=1404
             height=1872
+            bytes_per_pixel=2
+            fb_file="/dev/shm/swtfb.01"
             pixel_format="rgb565le"
         else
             width=1872
             height=1404
+            bytes_per_pixel=1
+            fb_file=":mem:"
             pixel_format="gray8"
             video_filters="$video_filters,transpose=2"
         fi
@@ -191,8 +197,10 @@ fi
 
 set -e # stop if an error occurs
 
-restream_rs='PATH="$PATH:/opt/bin/:." restream'
+restream_options="-h $height -w $width -b $bytes_per_pixel -f $fb_file"
 
+# shellcheck disable=SC2089
+restream_rs="PATH=\"\$PATH:/opt/bin/:.\" restream $restream_options"
 if $unsecure_connection; then
     listen_port=16789
     ssh_cmd "$restream_rs --listen $listen_port" &
@@ -202,7 +210,7 @@ else
     receive_cmd="ssh_cmd $restream_rs"
 fi
 
-# shellcheck disable=SC2086
+# shellcheck disable=SC2086,SC2090
 $receive_cmd \
     | $decompress \
     | $host_passthrough \
