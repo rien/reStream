@@ -60,9 +60,10 @@ reMarkable screen sharing over SSH.
 - `-s --source`: the ssh destination of the reMarkable (default: `root@10.11.99.1`)
 - `-o --output`: path of the output where the video should be recorded, as understood by `ffmpeg`; if this is `-`, the video is displayed in a new window and not recorded anywhere (default: `-`)
 - `-f --format`: when recording to an output, this option is used to force the encoding format; if this is `-`, `ffmpeg`’s auto format detection based on the file extension is used (default: `-`).
-- `-w --webcam`: record to a video4linux2 web cam device. By default the first found web cam is taken, this can be overwritten with `-o`. The video is scaled to 1280x720 to ensure compatibility with MS Teams, Skype for business and other programs which need this specific format. See [video4linux loopback](#video4linux-loopback) for installation instructions.
+- `-w --webcam`: record to a video4linux2 web cam device. By default the first found web cam is taken, this can be overwritten with `-o`. The video is scaled to 1280x720 to ensure compatibility with MS Teams, Skype for business and other programs which need this specific format. See [Video4Linux Loopback](#video4linux-loopback) for installation instructions.
 - `-m --measure`: use `pv` to measure how much data throughput you have (good to experiment with parameters to speed up the pipeline)
 - `-t --title`: set a custom window title for the video stream. The default title is "reStream". This option is disabled when using `-o --output`
+- `-u --unsecure-connection`: send framebuffer data over an unencrypted TCP-connection, resulting in more fps and less load on the reMarkable. See [Netcat](#netcat) for installation instructions.
 
 If you have problems, don't hesitate to [open an issue](https://github.com/rien/reStream/issues/new) or [send me an email](mailto:rien.maertens@posteo.be).
 
@@ -74,12 +75,13 @@ On your **host** machine:
 - ffmpeg (with ffplay)
 - ssh
 - Video4Linux loopback kernel module if you want to use `--webcam`
+- netcat if you want to use `--unsecure-connection`
 
 On your **reMarkable** you need the `restream` binary (see [installation instructions](#installation)).
 
 ### Video4Linux Loopback
 
-To set your remarkable as a webcam we need to be able to fake one. This is where the Video4Linux loopback kernel module comes into play. We need both the dkms and util packages. On Ubuntu you need to install:
+To set your remarkable as a webcam we need to be able to fake one. This is where the Video4Linux Loopback kernel module comes into play. We need both the dkms and util packages. On Ubuntu you need to install:
 
 ```
 apt install v4l2loopback-utils v4l2loopback-dkms
@@ -100,6 +102,16 @@ v4l2-ctl --list-devices
 ```
 
 The result should contain a line with "platform:v4l2loopback".
+
+### Netcat
+
+To use an unsafe and faster connection, we need the command `nc`, abbreviation of `netcat`.  
+If your system does not provide `nc`, the output of `command -v nc` is empty. In this case you need to install it.  
+[Several implementations](https://wiki.archlinux.org/index.php/Network_tools#Netcat) of `netcat` exists. On Ubuntu, you can install the version developed by OpenBSD, which is light and supports IPv6:
+
+```
+apt install netcat-openbsd
+```
 
 ## Troubleshooting
 
