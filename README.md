@@ -41,12 +41,12 @@ On Ubuntu, `apt install liblz4-tool` will do the trick.
 
 ### reStream installation
 
-We need to download the [latest release](https://github.com/rien/reStream/releases/) files.  
-In particular, `reStream.sh` is the executable on the host, and `restream.arm.static` is the binary, which have to be moved on the reMarkable with the name `restream`.
+The instructions below will install the files from the [latest release](https://github.com/rien/reStream/releases/).
+In particular, `reStream.sh` is the executable on the host, and `restream.arm.static` is the binary which has to be moved to the reMarkable with the name `restream`.
 
 #### Host
 
-Download [reStream.sh](https://github.com/rien/reStream/releases/download/1.1/reStream.sh) and make it executable
+Download [reStream.sh](https://github.com/rien/reStream/releases/download/latest/reStream.sh) and make it executable
 
 ```
 $ chmod +x reStream.sh
@@ -56,7 +56,7 @@ $ chmod +x reStream.sh
 > On Ubuntu, list these folders with `echo $PATH`. One should be`/usr/local/bin`.  
 > As root, download the executable there: 
 ```
-# wget https://github.com/rien/reStream/releases/download/1.1/reStream.sh -O /usr/local/bin/reStream
+# wget https://github.com/rien/reStream/releases/download/latest/reStream.sh -O /usr/local/bin/reStream
 # chmod +x /usr/local/bin/reStream
 ```
 
@@ -64,7 +64,7 @@ $ chmod +x reStream.sh
 
 You can install `restream` on reMarkable in three ways.
 
-1. Download the [restream](https://github.com/rien/reStream/releases/download/1.1/restream.arm.static) binary onto your host, move it to reMarkable and make it executable.
+1. Download the [restream](https://github.com/rien/reStream/releases/download/latest/restream.arm.static) binary onto your host, move it to reMarkable and make it executable.
 
 ```
 $ scp restream.arm.static root@10.11.99.1:/home/root/restream
@@ -74,7 +74,7 @@ $ ssh root@10.11.99.1 'chmod +x /home/root/restream'
 2. If you have access to internet on your reMarkable, download directly the binary onto it:
 
 ```
-$ ssh root@10.11.99.1 'wget https://github.com/rien/reStream/releases/download/1.1/restream.arm.static -O /home/root/restream && chmod +x /home/root/restream'
+$ ssh root@10.11.99.1 'wget https://github.com/rien/reStream/releases/download/latest/restream.arm.static -O /home/root/restream && chmod +x /home/root/restream'
 ```
 
 3. Install via [toltec](https://github.com/toltec-dev/toltec) if you use it.
@@ -87,7 +87,7 @@ $ ssh root@10.11.99.1 'opkg install restream'
 
 1. Connect your reMarkable with the USB cable.
 2. Make sure you can [open an SSH connection](https://remarkablewiki.com/tech/ssh).
-3. Run `./reStream.sh` in the script directory or `reStream` if you follow the [Tip](#tip) 
+3. Run `./reStream.sh` in the script directory or `reStream` [if you've installed it in your PATH](#tip) 
 4. A screen will pop-up on your local machine, with a live view of your reMarkable!
 
 ### Options
