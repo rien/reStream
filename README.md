@@ -64,23 +64,23 @@ $ chmod +x reStream.sh
 
 You can install `restream` on reMarkable in three ways.
 
-1. Download the [restream](https://github.com/rien/reStream/releases/download/latest/restream.arm.static) binary onto your host, move it to reMarkable and make it executable.
+- Install via [toltec](https://github.com/toltec-dev/toltec) if you use it.
 
 ```
-$ scp restream.arm.static root@10.11.99.1:/home/root/restream
-$ ssh root@10.11.99.1 'chmod +x /home/root/restream'
+$ ssh root@10.11.99.1 'opkg install restream'
 ```
 
-2. If you have access to internet on your reMarkable, download directly the binary onto it:
+- If you have access to internet on your reMarkable, download directly the binary onto it:
 
 ```
 $ ssh root@10.11.99.1 'wget https://github.com/rien/reStream/releases/download/latest/restream.arm.static -O /home/root/restream && chmod +x /home/root/restream'
 ```
 
-3. Install via [toltec](https://github.com/toltec-dev/toltec) if you use it.
+- Download the [restream](https://github.com/rien/reStream/releases/download/latest/restream.arm.static) binary onto your host, move it to reMarkable and make it executable.
 
 ```
-$ ssh root@10.11.99.1 'opkg install restream'
+$ scp restream.arm.static root@10.11.99.1:/home/root/restream
+$ ssh root@10.11.99.1 'chmod +x /home/root/restream'
 ```
 
 ## Usage
