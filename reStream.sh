@@ -3,6 +3,7 @@
 # default values for arguments
 remarkable="10.11.99.1"   # remarkable connected through USB
 landscape=true            # rotate 90 degrees to the right
+cursor=false              # show a cursor where the pen is hovering
 output_path=-             # display output through ffplay
 format=-                  # automatic output format
 webcam=false              # not to a webcam
@@ -16,6 +17,10 @@ while [ $# -gt 0 ]; do
     case "$1" in
         -p | --portrait)
             landscape=false
+            shift
+            ;;
+        -c | --cursor)
+            cursor=true
             shift
             ;;
         -s | --source)
@@ -68,10 +73,11 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         -h | --help | *)
-            echo "Usage: $0 [-p] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>]"
+            echo "Usage: $0 [-p] [-c] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>]"
             echo "Examples:"
             echo "	$0                              # live view in landscape"
             echo "	$0 -p                           # live view in portrait"
+            echo "	$0 -c                           # live view with cursor"
             echo "	$0 -s 192.168.0.10              # connect to different IP"
             echo "	$0 -o remarkable.mp4            # record to a file"
             echo "	$0 -o udp://dest:1234 -f mpegts # record to a stream"
@@ -198,6 +204,10 @@ fi
 set -e # stop if an error occurs
 
 restream_options="-h $height -w $width -b $bytes_per_pixel -f $fb_file"
+
+if "$cursor"; then
+    restream_options="$restream_options -c"
+fi
 
 # shellcheck disable=SC2089
 restream_rs="PATH=\"\$PATH:/opt/bin/:.\" restream $restream_options"
