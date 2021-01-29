@@ -46,7 +46,7 @@ In particular, `reStream.sh` is the executable on the host, and `restream.arm.st
 
 #### Host
 
-Download [reStream.sh](https://github.com/rien/reStream/releases/download/latest/reStream.sh) and make it executable
+Download [reStream.sh](https://github.com/rien/reStream/releases/latest/download/reStream.sh) and make it executable
 
 ```
 $ chmod +x reStream.sh
@@ -56,7 +56,7 @@ $ chmod +x reStream.sh
 > On Ubuntu, list these folders with `echo $PATH`. One should be`/usr/local/bin`.  
 > As root, download the executable there: 
 ```
-# wget https://github.com/rien/reStream/releases/download/latest/reStream.sh -O /usr/local/bin/reStream
+# wget https://github.com/rien/reStream/releases/latest/download/reStream.sh -O /usr/local/bin/reStream
 # chmod +x /usr/local/bin/reStream
 ```
 
@@ -73,10 +73,10 @@ $ ssh root@10.11.99.1 'opkg install restream'
 - If you have access to internet on your reMarkable, download directly the binary onto it:
 
 ```
-$ ssh root@10.11.99.1 'wget https://github.com/rien/reStream/releases/download/latest/restream.arm.static -O /home/root/restream && chmod +x /home/root/restream'
+$ ssh root@10.11.99.1 'wget https://github.com/rien/reStream/releases/latest/download/restream.arm.static -O /home/root/restream && chmod +x /home/root/restream'
 ```
 
-- Download the [restream](https://github.com/rien/reStream/releases/download/latest/restream.arm.static) binary onto your host, move it to reMarkable and make it executable.
+- Download the [restream](https://github.com/rien/reStream/releases/latest/download/restream.arm.static) binary onto your host, move it to reMarkable and make it executable.
 
 ```
 $ scp restream.arm.static root@10.11.99.1:/home/root/restream
