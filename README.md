@@ -9,48 +9,85 @@ reMarkable screen sharing over SSH.
 
 ## Installation
 
-### Unix
+### Requirements
 
-1. Install `lz4` on your host with your usual package manager. On Ubuntu,
-`apt install liblz4-tool` will do the trick.
-2. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`. **Note:** the reMarkable 2 doesn't support `ed25519` keys, those users should generate and `rsa` key. Try out `ssh root@10.11.99.1`, it should **not** prompt for a password.
-3. Clone this repository: `git clone https://github.com/rien/reStream`.
-4. Copy the `restream` executable to the reMarkable and make it executable.
+On your **host** machine
 
-    ```
-    # scp restream.arm.static root@10.11.99.1:/home/root/restream
-    # ssh root@10.11.99.1 'chmod +x /home/root/restream'
-    ```
+- Any POSIX-shell (e.g. bash)
+- ffmpeg (with ffplay)
+- ssh
+- lz4
 
-    --or--
+#### Unix
 
-    Install via [toltec](https://github.com/toltec-dev/toltec) if you use it.
+1. Install `lz4` on your host with your usual package manager.   
+On Ubuntu, `apt install liblz4-tool` will do the trick.
+2. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`.  
+> **Note:** the reMarkable 2 doesn't support `ed25519` keys, those users should generate and `rsa` key. Try out `ssh root@10.11.99.1`, it should **not** prompt for a password.
 
-    ```
-    # ssh root@10.11.99.1 'opkg install restream'
-    ```
+#### Windows
 
-### Windows
-
-1. Install [git for windows](https://gitforwindows.org/), which includes `Git BASH`.
-2. Install [ffmpeg for windows](https://ffmpeg.org/download.html#build-windows).
-3. Download [lz4 for windows](https://github.com/lz4/lz4/releases) and extract the `zip` to a folder where you'll remember it (e.g. `C:\Users\{username}\lz4`).
-4. Add the `ffmpeg` **and** `lz4` directories to the windows `Path` environment. [Here is a quick guide how.](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/)
+1. Install [ffmpeg for windows](https://ffmpeg.org/download.html#build-windows).
+2. Download [lz4 for windows](https://github.com/lz4/lz4/releases) and extract the `zip` to a folder where you'll remember it (e.g. `C:\Users\{username}\lz4`).
+3. Add the `ffmpeg` **and** `lz4` directories to the windows `Path` environment. [Here is a quick guide how.](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/)
     - Control Panel > Edit the system environment variables > Environment Variables
     - Find the `Path` variable under System variables, click edit.
     - Add two _New_ entries: one to the **bin** directory in the `ffmpeg` directory, and one to the `lz4` directory you created.
     - Click OK
-5. (Re)start `bash` so the new `Path` is used.
-6. Generate a new ssh key using `ssh-keygen`.
-7. Send the public key to the reMarkable (connect trough USB cable) using `ssh-copy-id -i ~/.ssh/id_rsa root@10.11.99.1`
-8. Try out `ssh root@10.11.99.1`, it should **not** prompt for a password.
-9. Go to step **3** of [the Unix installation instructions](#Unix).
+4. (Re)start `bash` so the new `Path` is used.
+5. Generate a new ssh-key using `ssh-keygen`.
+6. Send the public key to the reMarkable (connect trough USB cable) using `ssh-copy-id -i ~/.ssh/id_rsa root@10.11.99.1`
+7. Try out `ssh root@10.11.99.1`, it should **not** prompt for a password.
+
+### reStream installation
+
+We need to download the [latest release](https://github.com/rien/reStream/releases/) files.  
+In particular, `reStream.sh` is the executable on the host, and `restream.arm.static` is the binary, which have to be moved on the reMarkable with the name `restream`.
+
+#### Host
+
+Download [reStream.sh](https://github.com/rien/reStream/releases/download/1.1/reStream.sh) and make it executable
+
+```
+$ chmod +x reStream.sh
+```
+> **Tip**  
+> If you save `reStream.sh` in a `PATH` directory as `reStream`, you can launch it as `reStream`.  
+> On Ubuntu, list these folders with `echo $PATH`. One should be`/usr/local/bin`.  
+> As root, download the executable there: 
+```
+# wget https://github.com/rien/reStream/releases/download/1.1/reStream.sh -O /usr/local/bin/reStream
+# chmod +x /usr/local/bin/reStream
+```
+
+#### reMarkable
+
+You can install `restream` on reMarkable in three ways.
+
+1. Download the [restream](https://github.com/rien/reStream/releases/download/1.1/restream.arm.static) binary onto your host, move it to reMarkable and make it executable.
+
+```
+$ scp restream.arm.static root@10.11.99.1:/home/root/restream
+$ ssh root@10.11.99.1 'chmod +x /home/root/restream'
+```
+
+2. If you have access to internet on your reMarkable, download directly the binary onto it:
+
+```
+$ ssh root@10.11.99.1 'wget https://github.com/rien/reStream/releases/download/1.1/restream.arm.static -O /home/root/restream && chmod +x /home/root/restream'
+```
+
+3. Install via [toltec](https://github.com/toltec-dev/toltec) if you use it.
+
+```
+$ ssh root@10.11.99.1 'opkg install restream'
+```
 
 ## Usage
 
 1. Connect your reMarkable with the USB cable.
 2. Make sure you can [open an SSH connection](https://remarkablewiki.com/tech/ssh).
-3. Run `./reStream.sh`
+3. Run `./reStream.sh` in the script directory or `reStream` if you follow the [Tip](#tip) 
 4. A screen will pop-up on your local machine, with a live view of your reMarkable!
 
 ### Options
@@ -67,24 +104,19 @@ reMarkable screen sharing over SSH.
 
 If you have problems, don't hesitate to [open an issue](https://github.com/rien/reStream/issues/new) or [send me an email](mailto:rien.maertens@posteo.be).
 
-## Requirements
+## Extra Dependencies
 
 On your **host** machine:
 
-- Any POSIX-shell (e.g. bash)
-- ffmpeg (with ffplay)
-- ssh
-- Video4Linux loopback kernel module if you want to use `--webcam`
+- Video4Linux Loopback kernel module if you want to use `--webcam`
 - netcat if you want to use `--unsecure-connection`
-
-On your **reMarkable** you need the `restream` binary (see [installation instructions](#installation)).
 
 ### Video4Linux Loopback
 
 To set your remarkable as a webcam we need to be able to fake one. This is where the Video4Linux Loopback kernel module comes into play. We need both the dkms and util packages. On Ubuntu you need to install:
 
 ```
-apt install v4l2loopback-utils v4l2loopback-dkms
+# apt install v4l2loopback-utils v4l2loopback-dkms
 ```
 
 In some package managers `v4l2loopback-utils` is found in `v4l-utils`.
@@ -92,13 +124,13 @@ In some package managers `v4l2loopback-utils` is found in `v4l-utils`.
 After installing the module you must enable it with
 
 ```
-modprobe v4l2loopback
+# modprobe v4l2loopback
 ```
 
 To verify that this worked, execute:
 
 ```
-v4l2-ctl --list-devices
+$ v4l2-ctl --list-devices
 ```
 
 The result should contain a line with "platform:v4l2loopback".
@@ -110,7 +142,7 @@ If your system does not provide `nc`, the output of `command -v nc` is empty. In
 [Several implementations](https://wiki.archlinux.org/index.php/Network_tools#Netcat) of `netcat` exists. On Ubuntu, you can install the version developed by OpenBSD, which is light and supports IPv6:
 
 ```
-apt install netcat-openbsd
+# apt install netcat-openbsd
 ```
 
 ## Troubleshooting
