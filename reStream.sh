@@ -205,7 +205,7 @@ if $unsecure_connection; then
     listen_port=16789
     ssh_cmd "$restream_rs --listen $listen_port" &
     sleep 1 # give some time to restream.rs to start listening
-    receive_cmd="nc 10.11.99.1 $listen_port"
+    receive_cmd="nc $remarkable $listen_port"
 else
     receive_cmd="ssh_cmd $restream_rs"
 fi
