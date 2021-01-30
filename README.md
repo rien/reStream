@@ -51,7 +51,8 @@ Download [reStream.sh](https://github.com/rien/reStream/releases/latest/download
 ```
 $ chmod +x reStream.sh
 ```
-> **Tip**  
+##### Tip
+
 > If you save `reStream.sh` in a `PATH` directory as `reStream`, you can launch it as `reStream`.  
 > On Ubuntu, list these folders with `echo $PATH`. One should be`/usr/local/bin`.  
 > As root, download the executable there: 
