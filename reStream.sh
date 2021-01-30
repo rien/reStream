@@ -6,6 +6,7 @@ landscape=true            # rotate 90 degrees to the right
 output_path=-             # display output through ffplay
 format=-                  # automatic output format
 webcam=false              # not to a webcam
+hflip=false               # horizontal flip webcam
 measure_throughput=false  # measure how fast data is being transferred
 window_title=reStream     # stream window title is reStream
 video_filters=""          # list of ffmpeg filters to apply
@@ -58,6 +59,11 @@ while [ $# -gt 0 ]; do
             fi
             shift
             ;;
+        --hflip)
+            # do nothing if --webcam is not set
+            hflip=true
+            shift
+            ;;
         -t | --title)
             window_title="$2"
             shift
@@ -68,15 +74,15 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         -h | --help | *)
-            echo "Usage: $0 [-p] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>]"
+            echo "Usage: $0 [-p] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>] [-m] [-w] [--hflip]"
             echo "Examples:"
             echo "	$0                              # live view in landscape"
             echo "	$0 -p                           # live view in portrait"
             echo "	$0 -s 192.168.0.10              # connect to different IP"
             echo "	$0 -o remarkable.mp4            # record to a file"
             echo "	$0 -o udp://dest:1234 -f mpegts # record to a stream"
-            echo "  $0 -w                           # write to a webcam (yuv420p + resize)"
-            echo "  $0 -u                           # establish a unsecure but faster connection"
+            echo "	$0 -w --hflip                   # write to a webcam (yuv420p + resize + mirror)"
+            echo "	$0 -u                           # establish a unsecure but faster connection"
             exit 1
             ;;
     esac
@@ -174,6 +180,10 @@ if $webcam; then
     video_filters="$video_filters,format=pix_fmts=yuv420p"
     video_filters="$video_filters,scale=-1:720"
     video_filters="$video_filters,pad=1280:0:-1:0:#eeeeee"
+
+    # Some applications, eg Zoom and Discord, mirror by default the webcam video
+    # Restore the correct orientation
+    $hflip && video_filters="$video_filters,hflip"
 fi
 
 # set each frame presentation time to the time it is received
