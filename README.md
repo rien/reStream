@@ -25,6 +25,16 @@ On Ubuntu, `apt install liblz4-tool` will do the trick.
 2. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`.  
 > **Note:** the reMarkable 2 doesn't support `ed25519` keys, those users should generate and `rsa` key. Try out `ssh root@10.11.99.1`, it should **not** prompt for a password.
 
+> **Note 2:** If you are using Fedora 33 or later, RSA keys are considered ["legacy"](https://fedoraproject.org/wiki/Changes/StrongCryptoSettings2) and will no longer work out of the box.
+> Therefore you need to add a section to your `~.ssh/config` file to allow use of RSA ssh keys for specified hosts.
+> This example should work without any config, although the identifier needs to be "remarkable" for the reStream to work correctly: 
+>```
+>   Host remarkable
+>	    HostName 10.11.99.1
+>	    User root
+>	    PubkeyAcceptedKeyTypes=ssh-rsa
+>```
+
 #### Windows
 
 1. Install [ffmpeg for windows](https://ffmpeg.org/download.html#build-windows).
