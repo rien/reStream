@@ -100,12 +100,10 @@ ssh_cmd() {
         VER=$VERSION_ID
     fi
 
-	if [ "$OS" == "Fedora" ]; then
-        if [ "$VER" == "33" ]; then
-			ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "remarkable" "$@"
-        fi
+	if [ "$OS" == "Fedora" ] && [ "$VER" == "33" ]; then
+		ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "remarkable" "$@"
 	else
-			ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "root@$remarkable" "$@"
+		ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "root@$remarkable" "$@"
 	fi
 }
 
