@@ -90,7 +90,7 @@ ssh_cmd() {
 
     if [ -f /etc/os-release ]; then
         . /etc/os-release
-        OS=$NAME
+        OS=$NAME    
         VER=$VERSION_ID
     fi
 
@@ -104,7 +104,7 @@ ssh_cmd() {
 # check if we are able to reach the remarkable
 if ! ssh_cmd true; then
     echo "$remarkable unreachable or you have not set up an ssh key."
-    echo "If you see a 'Permission denied' error, please visit"
+    echo "If you see a 'Permission denied' error or is using Fedora 33+, please visit"
     echo "https://github.com/rien/reStream/#installation for instructions."
     exit 1
 fi
