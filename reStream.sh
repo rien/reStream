@@ -59,7 +59,7 @@ while [ $# -gt 0 ]; do
             fi
             shift
             ;;
-        --hflip)
+        --mirror)
             # do nothing if --webcam is not set
             hflip=true
             shift
@@ -81,7 +81,7 @@ while [ $# -gt 0 ]; do
             echo "	$0 -s 192.168.0.10              # connect to different IP"
             echo "	$0 -o remarkable.mp4            # record to a file"
             echo "	$0 -o udp://dest:1234 -f mpegts # record to a stream"
-            echo "	$0 -w --hflip                   # write to a webcam (yuv420p + resize + mirror)"
+            echo "	$0 -w --mirror                  # write to a webcam (yuv420p + resize + mirror)"
             echo "	$0 -u                           # establish a unsecure but faster connection"
             exit 1
             ;;
@@ -91,6 +91,11 @@ done
 ssh_cmd() {
     echo "[SSH]" "$@" >&2
     ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "root@$remarkable" "$@"
+}
+
+# SSH_CONNECTION is a variable on reMarkable => ssh '' instead of ssh ""
+remarkable_ip() {
+    ssh_cmd 'echo $SSH_CONNECTION' | cut -d\  -f3
 }
 
 # check if we are able to reach the remarkable
@@ -215,7 +220,7 @@ if $unsecure_connection; then
     listen_port=16789
     ssh_cmd "$restream_rs --listen $listen_port" &
     sleep 1 # give some time to restream.rs to start listening
-    receive_cmd="nc $remarkable $listen_port"
+    receive_cmd="nc $(remarkable_ip) $listen_port"
 else
     receive_cmd="ssh_cmd $restream_rs"
 fi
