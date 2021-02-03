@@ -99,7 +99,7 @@ $ ssh root@10.11.99.1 'chmod +x /home/root/restream'
 - `-o --output`: path of the output where the video should be recorded, as understood by `ffmpeg`; if this is `-`, the video is displayed in a new window and not recorded anywhere (default: `-`)
 - `-f --format`: when recording to an output, this option is used to force the encoding format; if this is `-`, `ffmpeg`’s auto format detection based on the file extension is used (default: `-`).
 - `-w --webcam`: record to a video4linux2 web cam device. By default the first found web cam is taken, this can be overwritten with `-o`. The video is scaled to 1280x720 to ensure compatibility with MS Teams, Skype for business and other programs which need this specific format. See [Video4Linux Loopback](#video4linux-loopback) for installation instructions.
-- `--hflip`: mirror the web cam video (`--webcam` has to be set). By default or as only choice, some programs, such as Zoom and Discord, mirror the camera. This flag restores the correct orientation.
+- `--mirror`: mirror the web cam video (`--webcam` has to be set). By default or as only choice, some programs, such as Zoom and Discord, mirror the camera. This flag restores the correct orientation.
 - `-m --measure`: use `pv` to measure how much data throughput you have (good to experiment with parameters to speed up the pipeline)
 - `-t --title`: set a custom window title for the video stream. The default title is "reStream". This option is disabled when using `-o --output`
 - `-u --unsecure-connection`: send framebuffer data over an unencrypted TCP-connection, resulting in more fps and less load on the reMarkable. See [Netcat](#netcat) for installation instructions.
