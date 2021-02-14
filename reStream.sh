@@ -89,24 +89,8 @@ while [ $# -gt 0 ]; do
 done
 
 ssh_cmd() {
-	OS=""
-	VER=""
-    
     echo "[SSH]" "$@" >&2
-
-    if [ -f /etc/os-release ]; then
-        . /etc/os-release
-        OS=$NAME
-        VER=$VERSION_ID
-    fi
-
-	if [ "$OS" == "Fedora" ]; then
-        if [ "$VER" == "33" ]; then
-			ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "remarkable" "$@"
-        fi
-	else
-			ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "root@$remarkable" "$@"
-	fi
+    ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "root@$remarkable" "$@"
 }
 
 # SSH_CONNECTION is a variable on reMarkable => ssh '' instead of ssh ""
