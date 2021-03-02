@@ -10,6 +10,7 @@ measure_throughput=false  # measure how fast data is being transferred
 window_title=reStream     # stream window title is reStream
 video_filters=""          # list of ffmpeg filters to apply
 unsecure_connection=false # Establish a unsecure connection that is faster
+ssh_key_location="$HOME/.ssh/id_rsa" # the default ssh key location used when "-i" is not present
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
@@ -67,8 +68,14 @@ while [ $# -gt 0 ]; do
             unsecure_connection=true
             shift
             ;;
+        -i | --identity)
+            ssh_key_location="$2"
+            shift
+            shift
+            ;;
+
         -h | --help | *)
-            echo "Usage: $0 [-p] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>]"
+            echo "Usage: $0 [-p] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>] [-i <identity_file>]"
             echo "Examples:"
             echo "	$0                              # live view in landscape"
             echo "	$0 -p                           # live view in portrait"
@@ -77,6 +84,7 @@ while [ $# -gt 0 ]; do
             echo "	$0 -o udp://dest:1234 -f mpegts # record to a stream"
             echo "  $0 -w                           # write to a webcam (yuv420p + resize)"
             echo "  $0 -u                           # establish a unsecure but faster connection"
+            echo " $0 -i "$HOME/.ssh/identity_file" # use the identity_file key for the underlying ssh connection"
             exit 1
             ;;
     esac
@@ -84,7 +92,7 @@ done
 
 ssh_cmd() {
     echo "[SSH]" "$@" >&2
-    ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "root@$remarkable" "$@"
+    ssh -o ConnectTimeout=1 -o PasswordAuthentication=no -i $ssh_key_location "root@$remarkable" "$@"
 }
 
 # check if we are able to reach the remarkable
