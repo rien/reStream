@@ -171,14 +171,12 @@ If you want to play with the `restream` code, you will have to [install Rust](ht
 
 There are two ways of building the required restream binary for streaming the reMarkable framebuffer. For both approaches, the generated restream binary will be located under `target/armv7-unknown-linux-gnueabihf/release/restream`.
 
-- Using docker and the toltec toolchain
+- **Using docker and the toltec toolchain:**
+  You can use the [toltec toolchain docker images](https://github.com/toltec-dev/toolchain) to build a restream binary compatible with the reMarkable.
 
-You can use the [toltec toolchain docker images](https://github.com/toltec-dev/toolchain) to build a restream binary compatible with the reMarkable.
+    ```
+    docker run --rm -v $(pwd):/project -v /project/.cargo -w "/project" ghcr.io/toltec-dev/rust:latest cargo build --release --target=armv7-unknown-linux-gnueabihf
+    ```
 
-```
-docker run --rm -v $(pwd):/project -v /project/.cargo -w "/project" ghcr.io/toltec-dev/rust:latest cargo build --release --target=armv7-unknown-linux-gnueabihf
-```
-
-- Using the reMarkable toolchain 
-
-[Setup the reMarkable toolchain](https://github.com/canselcik/libremarkable#setting-up-the-toolchain) to do cross-platform development.
+- **Using the reMarkable toolchain:**
+  [Setup the reMarkable toolchain](https://github.com/canselcik/libremarkable#setting-up-the-toolchain) to do cross-platform development.
