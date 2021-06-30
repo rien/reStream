@@ -23,7 +23,7 @@ On your **host** machine
 1. Install `lz4` on your host with your usual package manager.   
 On Ubuntu, `apt install liblz4-tool` will do the trick.
 2. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`.  
-> **Note:** the reMarkable 2 doesn't support `ed25519` keys. If it's your case, try generating an `ecdsa` key. Try out `ssh root@10.11.99.1`, it should **not** prompt for root@10.11.99.1's password.
+> **Note:** the reMarkable 2 doesn't support `ed25519` keys. If it's your case, try generating an `ecdsa` or `rsa` key. Try out `ssh root@10.11.99.1`, it should **not** prompt for root@10.11.99.1's password.
 
 #### Windows
 
