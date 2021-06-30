@@ -94,6 +94,7 @@ ssh_cmd() {
 }
 
 # SSH_CONNECTION is a variable on reMarkable => ssh '' instead of ssh ""
+# shellcheck disable=SC2016
 remarkable_ip() {
     ssh_cmd 'echo $SSH_CONNECTION' | cut -d\  -f3
 }
