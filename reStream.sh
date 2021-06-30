@@ -230,14 +230,16 @@ fi
 $receive_cmd \
     | $decompress \
     | $host_passthrough \
-    | ("$output_cmd" \
-        -vcodec rawvideo \
-        -loglevel "$loglevel" \
-        -f rawvideo \
-        -pixel_format "$pixel_format" \
-        -video_size "$width,$height" \
-        $window_title_option \
-        -i - \
-        "$@" \
-        ; kill $$
+    | (
+        "$output_cmd" \
+            -vcodec rawvideo \
+            -loglevel "$loglevel" \
+            -f rawvideo \
+            -pixel_format "$pixel_format" \
+            -video_size "$width,$height" \
+            $window_title_option \
+            -i - \
+            "$@" \
+            ;
+        kill $$
     )
