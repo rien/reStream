@@ -99,13 +99,6 @@ ssh_cmd() {
     ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "root@$remarkable" "$@"
 }
 
-# kill reStream on remarkable at the end.
-# shellcheck disable=SC2016
-exit_rm() {
-    ssh_cmd 'kill $(pidof restream)'
-}
-trap exit_rm EXIT INT HUP
-
 # SSH_CONNECTION is a variable on reMarkable => ssh '' instead of ssh ""
 # shellcheck disable=SC2016
 remarkable_ip() {
@@ -238,6 +231,13 @@ if $unsecure_connection; then
 else
     receive_cmd="ssh_cmd $restream_rs"
 fi
+
+# kill reStream on remarkable at the end.
+# shellcheck disable=SC2016
+exit_rm() {
+    ssh_cmd 'killall -q restream'
+}
+trap exit_rm EXIT INT HUP
 
 # shellcheck disable=SC2086,SC2090
 $receive_cmd \
