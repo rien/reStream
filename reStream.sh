@@ -74,15 +74,21 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         -h | --help | *)
-            echo "Usage: $0 [-p] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>] [-m] [-w] [--hflip]"
-            echo "Examples:"
-            echo "	$0                              # live view in landscape"
-            echo "	$0 -p                           # live view in portrait"
-            echo "	$0 -s 192.168.0.10              # connect to different IP"
-            echo "	$0 -o remarkable.mp4            # record to a file"
-            echo "	$0 -o udp://dest:1234 -f mpegts # record to a stream"
-            echo "	$0 -w --mirror                  # write to a webcam (yuv420p + resize + mirror)"
-            echo "	$0 -u                           # establish a unsecure but faster connection"
+            echo "Usage: $(basename "$0") [options]"
+            echo ""
+            printf "OPTIONS:"
+            printf "\n\t-h, --help\t show usage information"
+            printf "\n\t-p, --portrait\t shows the reMarkable screen in portrait mode (default: landscape mode, 90 degrees rotated to the right)"
+            printf "\n\t-s, --source\t the ssh destination of the reMarkable (default: root@10.11.99.1)"
+            printf "\n\t-o, --output\t path of the output where the video should be recorded (default: -)"
+            printf "\n\t-f, --format\t when recording to an output, this option is used to force the encoding format (default: -)"
+            printf "\n\t-w, --webcam\t record to a video4linux2 web cam device"
+            printf "\n\t--mirror\t mirror the web cam video (--webcam has to be set)"
+            printf "\n\t-m, --measure\t use pv to measure how much data throughput you have"
+            printf "\n\t-t, --title\t set a custom window title for the video stream (default: \"reStream\")"
+            printf "\n\t-u, --unsecure-connection\t send framebuffer data over an unencrypted TCP-connection, resulting in more fps and less load on the reMarkable"
+            printf "\n\n"
+            echo "For more information, visit https://github.com/rien/reStream"
             exit 1
             ;;
     esac

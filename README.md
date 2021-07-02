@@ -94,7 +94,7 @@ $ ssh root@10.11.99.1 'chmod +x /home/root/restream'
 ### Options
 
 - `-h --help`: show usage information
-- `-p --portrait`: shows the reMarkable screen in portrait mode (default: landscape mode, 90 degrees rotated tot the right)
+- `-p --portrait`: shows the reMarkable screen in portrait mode (default: landscape mode, 90 degrees rotated to the right)
 - `-s --source`: the ssh destination of the reMarkable (default: `root@10.11.99.1`)
 - `-o --output`: path of the output where the video should be recorded, as understood by `ffmpeg`; if this is `-`, the video is displayed in a new window and not recorded anywhere (default: `-`)
 - `-f --format`: when recording to an output, this option is used to force the encoding format; if this is `-`, `ffmpeg`’s auto format detection based on the file extension is used (default: `-`).
