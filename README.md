@@ -190,4 +190,6 @@ using this project.
 
 I do not accept donations. There are charities that need more financial support
 than I do, so please consider supporting a local charity instead. Preferably one
-that promotes diversity in technology like girlswhocode, coderdojo, etc.
+that promotes diversity in technology like
+[GirlsWhoCode](https://girlswhocode.com/), [CoderDojo](https://coderdojo.com/),
+etc.
