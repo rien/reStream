@@ -18,6 +18,8 @@ On your **host** machine
 - ssh
 - lz4
 
+Alternatively you can run reStream in a Docker container which comes with above dependencies pre-installed.
+
 #### Unix
 
 1. Install `lz4` on your host with your usual package manager.   
@@ -38,6 +40,15 @@ On Ubuntu, `apt install liblz4-tool` will do the trick.
 5. Generate a new ssh-key using `ssh-keygen`.
 6. Send the public key to the reMarkable (connect trough USB cable) using `ssh-copy-id -i ~/.ssh/id_rsa root@10.11.99.1`
 7. Try out `ssh root@10.11.99.1`, it should **not** prompt for a password.
+
+#### Using Docker
+
+1. [Install Docker](https://docs.docker.com/get-docker/) if you haven't already.
+2. Make sure your host system can connect to your reMarkable via `ssh`.
+Therefore follow the above installation instructions for the SSH setup depending on your operating system.
+3. Non-Unix users need to install an X server compatibility layer.
+    - Windows WSL2 users install [VcXsrv](https://sourceforge.net/projects/vcxsrv/) and check all extra settings including "disable access control".
+    - macOS users install [XQuartz](https://www.xquartz.org/), open its preferences and check "Allow connections from network clients" in the security tab.
 
 ### reStream installation
 
@@ -105,6 +116,12 @@ $ ssh root@10.11.99.1 'chmod +x /home/root/restream'
 - `-u --unsecure-connection`: send framebuffer data over an unencrypted TCP-connection, resulting in more fps and less load on the reMarkable. See [Netcat](#netcat) for installation instructions.
 
 If you have problems, don't hesitate to [open an issue](https://github.com/rien/reStream/issues/new) or [send me an email](mailto:rien.maertens@posteo.be).
+
+### Running reStream via Docker
+
+Simply run `./docker.sh` instead of `./reStream.sh`.
+You can still append options as necessary, for example `./docker.sh -p -m`.
+Note that some options such as `--webcam` or `--output` are not yet supported when running reStream within Docker.
 
 ## Extra Dependencies
 
