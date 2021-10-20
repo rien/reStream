@@ -180,3 +180,16 @@ There are two ways of building the required restream binary for streaming the re
 
 - **Using the reMarkable toolchain:**
   [Setup the reMarkable toolchain](https://github.com/canselcik/libremarkable#setting-up-the-toolchain) to do cross-platform development.
+
+## Like using reStream?
+
+I made this project in my spare time and received help from a handful of
+wonderful contributors. If you want to say thanks, please
+[send me an email](mailto:thanks@rxn.be) and be sure to mention how you are
+using this project.
+
+I do not accept donations. There are charities that need more financial support
+than I do, so please consider supporting a local charity instead. Preferably one
+that promotes diversity in technology like
+[GirlsWhoCode](https://girlswhocode.com/), [CoderDojo](https://coderdojo.com/),
+etc.
