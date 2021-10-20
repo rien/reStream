@@ -44,8 +44,8 @@ while [ $# -gt 0 ]; do
 
             # check if there is a modprobed v4l2 loopback device
             # use the first cam as default if there is no output_path already
-            cam_path=$(v4l2-ctl --list-devices \
-                | sed -n '/^[^\s]\+platform:v4l2loopback/{n;s/\s*//g;p;q}')
+            cam_path=$(v4l2-ctl --list-devices |
+                sed -n '/^[^\s]\+platform:v4l2loopback/{n;s/\s*//g;p;q}')
 
             # fail if there is no such device
             if [ -e "$cam_path" ]; then
@@ -96,7 +96,12 @@ done
 
 ssh_cmd() {
     echo "[SSH]" "$@" >&2
-    ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "root@$remarkable" "$@"
+    ssh \
+        -o ConnectTimeout=1 \
+        -o PasswordAuthentication=no \
+        -o PubkeyAcceptedKeyTypes=+ssh-rsa \
+        -o HostKeyAlgorithms=+ssh-rsa \
+        "root@$remarkable" "$@"
 }
 
 # SSH_CONNECTION is a variable on reMarkable => ssh '' instead of ssh ""
@@ -240,10 +245,10 @@ exit_rm() {
 trap exit_rm EXIT INT HUP
 
 # shellcheck disable=SC2086,SC2090
-$receive_cmd \
-    | $decompress \
-    | $host_passthrough \
-    | (
+$receive_cmd |
+    $decompress |
+    $host_passthrough |
+    (
         "$output_cmd" \
             -vcodec rawvideo \
             -loglevel "$loglevel" \
