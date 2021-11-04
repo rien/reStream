@@ -90,7 +90,11 @@ done
 
 ssh_cmd() {
     echo "[SSH]" "$@" >&2
-    ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "root@$remarkable" "$@"
+    ssh -o ConnectTimeout=1 \
+        -o PasswordAuthentication=no \
+        -o PubkeyAcceptedKeyTypes=+ssh-rsa \
+        -o HostKeyAlgorithms=+ssh-rsa \
+        "root@$remarkable" "$@"
 }
 
 # kill reStream on remarkable at the end.
