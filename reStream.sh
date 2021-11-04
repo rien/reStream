@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Current reStream.sh version
+version="1.2.0"
+
 # default values for arguments
 remarkable="10.11.99.1"   # remarkable connected through USB
 landscape=true            # rotate 90 degrees to the right
@@ -15,6 +18,10 @@ unsecure_connection=false # Establish a unsecure connection that is faster
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
     case "$1" in
+        -v | --version)
+            echo "reStream version: v$version"
+            exit
+            ;;
         -p | --portrait)
             landscape=false
             shift
