@@ -172,14 +172,11 @@ If you want to play with the `restream` code, you will have to [install Rust](ht
 There are three ways of building the required restream binary for streaming the reMarkable framebuffer. For these approaches, the generated restream binary will be located under `target/armv7-unknown-linux-gnueabihf/release/restream`.
 
 - **Using nix flakes**
-    With [Nix](https://nixos.org/guides/install-nix.html) installed and
-    [Nix flakes](https://nixos.wiki/wiki/Flakes#Installing_flakes) enabled, you
-    can easily setup the devlopment environment with:
-    ```
-    nix develop
-    ```
-    After which you can simply run `cargo build --release` to build the restream
-    binary.
+  With [Nix](https://nixos.org/guides/install-nix.html) installed you can
+  create the development environment with `nix-shell` or (when using
+  [Nix flakes](https://nixos.wiki/wiki/Flakes#Installing_flakes) `nix-develop`.
+  After which you can simply run `cargo build --release` to build the restream
+  binary on your machine.
 
 - **Using docker and the toltec toolchain:**
   You can use the [toltec toolchain docker images](https://github.com/toltec-dev/toolchain) to build a restream binary compatible with the reMarkable.
