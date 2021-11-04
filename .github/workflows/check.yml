@@ -33,3 +33,19 @@ jobs:
 
     - name: Shell Formatter
       run: docker run -v $GITHUB_WORKSPACE:/mnt -w /mnt mvdan/shfmt -d reStream.sh
+
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - uses: cachix/install-nix-action@v14.1
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+
+    - run: nix-shell
+    - run: cargo build
