@@ -119,9 +119,7 @@ remarkable_ip() {
 
 # check if we are able to reach the remarkable
 if ! ssh_cmd true; then
-    echo "$remarkable unreachable or you have not set up an ssh key."
-    echo "If you see a 'Permission denied' error, please visit"
-    echo "https://github.com/rien/reStream/#installation for instructions."
+    trap - EXIT
     exit 1
 fi
 
