@@ -11,6 +11,7 @@
         cargo-watch
         cargo-limit
         shellcheck
+        shfmt
         lz4
       ];
       CARGO_BUILD_TARGET="armv7-unknown-linux-gnueabihf";
