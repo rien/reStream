@@ -247,9 +247,11 @@ impl ReStreamer {
     /// Draw pen position into fb data, if necessary (in hover range and not drawing).
     fn draw_pen_position(&mut self, buf: &mut [u8]) {
         if let (false, Some((y, x))) = (self.drawing, self.pen_pos) {
+            let flip = self.width > self.height;
+            let (x, y) = if flip { (y, x) } else { (x, y) };
             // we need negative numbers to calculate offsets correctly
-            let width = self.width as isize;
-            let height = self.height as isize;
+            let width = if flip { self.height } else { self.width } as isize;
+            let height = if flip { self.width } else { self.height } as isize;
             let bpp = self.bytes_per_pixel as isize;
             let cursor = self.cursor as isize;
             for (i, (yoff, no)) in PEN_IMAGE.iter().enumerate() {
