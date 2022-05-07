@@ -23,7 +23,7 @@ On your **host** machine
 1. Install `lz4` on your host with your usual package manager.   
 On Ubuntu, `apt install liblz4-tool` will do the trick.
 2. [Set up an SSH key and add it to the ssh-agent](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), then add your key to the reMarkable with `ssh-copy-id root@10.11.99.1`.  
-> **Note:** the reMarkable 2 doesn't support `ed25519` keys, those users should generate and `rsa` key. Try out `ssh root@10.11.99.1`, it should **not** prompt for a password.
+> **Note:** the reMarkable 2 doesn't support `ed25519` keys. If it's your case, try generating an `ecdsa` or `rsa` key. Try out `ssh root@10.11.99.1`, it should **not** prompt for root@10.11.99.1's password.
 
 #### Windows
 
@@ -51,7 +51,8 @@ Download [reStream.sh](https://github.com/rien/reStream/releases/latest/download
 ```
 $ chmod +x reStream.sh
 ```
-> **Tip**  
+##### Tip
+
 > If you save `reStream.sh` in a `PATH` directory as `reStream`, you can launch it as `reStream`.  
 > On Ubuntu, list these folders with `echo $PATH`. One should be`/usr/local/bin`.  
 > As root, download the executable there: 
@@ -98,6 +99,7 @@ $ ssh root@10.11.99.1 'chmod +x /home/root/restream'
 - `-o --output`: path of the output where the video should be recorded, as understood by `ffmpeg`; if this is `-`, the video is displayed in a new window and not recorded anywhere (default: `-`)
 - `-f --format`: when recording to an output, this option is used to force the encoding format; if this is `-`, `ffmpeg`’s auto format detection based on the file extension is used (default: `-`).
 - `-w --webcam`: record to a video4linux2 web cam device. By default the first found web cam is taken, this can be overwritten with `-o`. The video is scaled to 1280x720 to ensure compatibility with MS Teams, Skype for business and other programs which need this specific format. See [Video4Linux Loopback](#video4linux-loopback) for installation instructions.
+- `--mirror`: mirror the web cam video (`--webcam` has to be set). By default or as only choice, some programs, such as Zoom and Discord, mirror the camera. This flag restores the correct orientation.
 - `-m --measure`: use `pv` to measure how much data throughput you have (good to experiment with parameters to speed up the pipeline)
 - `-t --title`: set a custom window title for the video stream. The default title is "reStream". This option is disabled when using `-o --output`
 - `-u --unsecure-connection`: send framebuffer data over an unencrypted TCP-connection, resulting in more fps and less load on the reMarkable. See [Netcat](#netcat) for installation instructions.
@@ -151,7 +153,50 @@ Steps you can try if the script isn't working:
 
 - [Set up an SSH key](#installation)
 - Update `ffmpeg` to version 4.
+- Make sure RSA keys are allowed on your system:
+    - In some modern Unix distributions, RSA keys are considered ["legacy"](https://fedoraproject.org/wiki/Changes/StrongCryptoSettings2) and will no longer work out of the box.
+    - Therefore you need to add a section to your `~.ssh/config` file to allow use of RSA ssh keys for specified hosts. (according to [https://remarkablewiki.com/tech/ssh](https://remarkablewiki.com/tech/ssh), Remarkable devices might not work with non-RSA keys, which is the reason for why this is necessary.)
+    - This example should work without any additional configuration, although `PubkeyAcceptedKeyTypes=ssh-rsa` is required if you want to modify it: 
+        ```
+        Host remarkable
+            HostName 10.11.99.1
+            User root
+            PubkeyAcceptedKeyTypes=ssh-rsa
+        ```
+    - You can then use the -s flag to connect to the Remarkable: `./reStream.sh -s remarkable`
 
 ## Development
 
-If you want to play with the `restream` code, you will have to [install Rust](https://www.rust-lang.org/learn/get-started) and [setup the reMarkable toolchain](https://github.com/canselcik/libremarkable#setting-up-the-toolchain) to do cross-platform development.
+If you want to play with the `restream` code, you will have to [install Rust](https://www.rust-lang.org/learn/get-started).
+
+There are three ways of building the required restream binary for streaming the reMarkable framebuffer. For these approaches, the generated restream binary will be located under `target/armv7-unknown-linux-gnueabihf/release/restream`.
+
+- **Using nix flakes**
+  With [Nix](https://nixos.org/guides/install-nix.html) installed you can
+  create the development environment with `nix-shell` or (when using
+  [Nix flakes](https://nixos.wiki/wiki/Flakes#Installing_flakes) `nix-develop`.
+  After which you can simply run `cargo build --release` to build the restream
+  binary on your machine.
+
+- **Using docker and the toltec toolchain:**
+  You can use the [toltec toolchain docker images](https://github.com/toltec-dev/toolchain) to build a restream binary compatible with the reMarkable.
+
+    ```
+    docker run --rm -v $(pwd):/project -v /project/.cargo -w "/project" ghcr.io/toltec-dev/rust:latest cargo build --release --target=armv7-unknown-linux-gnueabihf
+    ```
+
+- **Using the reMarkable toolchain:**
+  [Setup the reMarkable toolchain](https://github.com/canselcik/libremarkable#setting-up-the-toolchain) to do cross-platform development.
+
+## Like using reStream?
+
+I made this project in my spare time and received help from a handful of
+wonderful contributors. If you want to say thanks, please
+[send me an email](mailto:thanks@rxn.be) and be sure to mention how you are
+using this project.
+
+I do not accept donations. There are charities that need more financial support
+than I do, so please consider supporting a local charity instead. Preferably one
+that promotes diversity in technology like
+[GirlsWhoCode](https://girlswhocode.com/), [CoderDojo](https://coderdojo.com/),
+etc.

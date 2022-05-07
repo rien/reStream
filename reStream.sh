@@ -1,20 +1,28 @@
 #!/bin/sh
 
+# Current reStream.sh version
+version="1.2.0"
+
 # default values for arguments
-remarkable="10.11.99.1"   # remarkable connected through USB
-landscape=true            # rotate 90 degrees to the right
-cursor=false              # show a cursor where the pen is hovering
-output_path=-             # display output through ffplay
-format=-                  # automatic output format
-webcam=false              # not to a webcam
-measure_throughput=false  # measure how fast data is being transferred
-window_title=reStream     # stream window title is reStream
-video_filters=""          # list of ffmpeg filters to apply
-unsecure_connection=false # Establish a unsecure connection that is faster
+remarkable="${REMARKABLE_IP:-10.11.99.1}" # remarkable IP address
+landscape=true                            # rotate 90 degrees to the right
+cursor=false                              # show a cursor where the pen is hovering
+output_path=-                             # display output through ffplay
+format=-                                  # automatic output format
+webcam=false                              # not to a webcam
+hflip=false                               # horizontal flip webcam
+measure_throughput=false                  # measure how fast data is being transferred
+window_title=reStream                     # stream window title is reStream
+video_filters=""                          # list of ffmpeg filters to apply
+unsecure_connection=false                 # Establish a unsecure connection that is faster
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
     case "$1" in
+        -v | --version)
+            echo "reStream version: v$version"
+            exit
+            ;;
         -p | --portrait)
             landscape=false
             shift
@@ -63,6 +71,11 @@ while [ $# -gt 0 ]; do
             fi
             shift
             ;;
+        --mirror)
+            # do nothing if --webcam is not set
+            hflip=true
+            shift
+            ;;
         -t | --title)
             window_title="$2"
             shift
@@ -73,7 +86,7 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         -h | --help | *)
-            echo "Usage: $0 [-p] [-c] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>]"
+            echo "Usage: $0 [-p] [-c] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>] [-m] [-w] [--hflip]"
             echo "Examples:"
             echo "	$0                              # live view in landscape"
             echo "	$0 -p                           # live view in portrait"
@@ -81,8 +94,8 @@ while [ $# -gt 0 ]; do
             echo "	$0 -s 192.168.0.10              # connect to different IP"
             echo "	$0 -o remarkable.mp4            # record to a file"
             echo "	$0 -o udp://dest:1234 -f mpegts # record to a stream"
-            echo "  $0 -w                           # write to a webcam (yuv420p + resize)"
-            echo "  $0 -u                           # establish a unsecure but faster connection"
+            echo "	$0 -w --mirror                  # write to a webcam (yuv420p + resize + mirror)"
+            echo "	$0 -u                           # establish a unsecure but faster connection"
             exit 1
             ;;
     esac
@@ -90,7 +103,24 @@ done
 
 ssh_cmd() {
     echo "[SSH]" "$@" >&2
-    ssh -o ConnectTimeout=1 -o PasswordAuthentication=no "root@$remarkable" "$@"
+    ssh -o ConnectTimeout=1 \
+        -o PasswordAuthentication=no \
+        -o PubkeyAcceptedKeyTypes=+ssh-rsa \
+        -o HostKeyAlgorithms=+ssh-rsa \
+        "root@$remarkable" "$@"
+}
+
+# kill reStream on remarkable at the end.
+# shellcheck disable=SC2016
+exit_rm() {
+    ssh_cmd 'kill $(pidof restream)'
+}
+trap exit_rm EXIT INT HUP
+
+# SSH_CONNECTION is a variable on reMarkable => ssh '' instead of ssh ""
+# shellcheck disable=SC2016
+remarkable_ip() {
+    ssh_cmd 'echo $SSH_CONNECTION' | cut -d\  -f3
 }
 
 # check if we are able to reach the remarkable
@@ -180,6 +210,10 @@ if $webcam; then
     video_filters="$video_filters,format=pix_fmts=yuv420p"
     video_filters="$video_filters,scale=-1:720"
     video_filters="$video_filters,pad=1280:0:-1:0:#eeeeee"
+
+    # Some applications, eg Zoom and Discord, mirror by default the webcam video
+    # Restore the correct orientation
+    $hflip && video_filters="$video_filters,hflip"
 fi
 
 # set each frame presentation time to the time it is received
@@ -215,7 +249,7 @@ if $unsecure_connection; then
     listen_port=16789
     ssh_cmd "$restream_rs --listen $listen_port" &
     sleep 1 # give some time to restream.rs to start listening
-    receive_cmd="nc 10.11.99.1 $listen_port"
+    receive_cmd="nc $(remarkable_ip) $listen_port"
 else
     receive_cmd="ssh_cmd $restream_rs"
 fi
@@ -224,12 +258,16 @@ fi
 $receive_cmd \
     | $decompress \
     | $host_passthrough \
-    | "$output_cmd" \
-        -vcodec rawvideo \
-        -loglevel "$loglevel" \
-        -f rawvideo \
-        -pixel_format "$pixel_format" \
-        -video_size "$width,$height" \
-        $window_title_option \
-        -i - \
-        "$@"
+    | (
+        "$output_cmd" \
+            -vcodec rawvideo \
+            -loglevel "$loglevel" \
+            -f rawvideo \
+            -pixel_format "$pixel_format" \
+            -video_size "$width,$height" \
+            $window_title_option \
+            -i - \
+            "$@" \
+            ;
+        kill $$
+    )
