@@ -4,16 +4,16 @@
 version="1.2.0"
 
 # default values for arguments
-remarkable="${REMARKABLE_IP:-10.11.99.1}" # remarkable IP address
-landscape=true                            # rotate 90 degrees to the right
-output_path=-                             # display output through ffplay
-format=-                                  # automatic output format
-webcam=false                              # not to a webcam
-hflip=false                               # horizontal flip webcam
-measure_throughput=false                  # measure how fast data is being transferred
-window_title=reStream                     # stream window title is reStream
-video_filters=""                          # list of ffmpeg filters to apply
-unsecure_connection=false                 # Establish a unsecure connection that is faster
+remarkable="${REMARKABLE_IP:-10.11.99.1}"   # remarkable IP address
+landscape=true                              # rotate 90 degrees to the right
+output_path=-                               # display output through ffplay
+format=-                                    # automatic output format
+webcam=false                                # not to a webcam
+hflip=false                                 # horizontal flip webcam
+measure_throughput=false                    # measure how fast data is being transferred
+window_title=reStream                       # stream window title is reStream
+video_filters="curves=all='0/0 0.07/1 1/1'" # list of ffmpeg filters to apply
+unsecure_connection=false                   # Establish a unsecure connection that is faster
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
