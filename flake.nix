@@ -17,9 +17,22 @@
     pkgs = import nixpkgs {
       inherit system overlays;
     };
+    restream-bin = pkgs.stdenv.mkDerivation {
+      name = "restream";
+      version = "0.0.1";
+      src = ./.;
+      nativeBuildInputs = [ pkgs.makeWrapper pkgs.lz4 pkgs.ffmpeg-full ];
+      buildInputs = [ pkgs.lz4 ];
+
+      installPhase = ''
+        install -m755 -D reStream.sh $out/bin/restream
+        wrapProgram $out/bin/restream --prefix PATH : ${pkgs.lib.makeBinPath [pkgs.lz4 pkgs.ffmpeg-full]}
+      '';
+    };
   in
   with pkgs;
   {
     devShell = (import ./default.nix).devShell pkgs;
+    packages.default = restream-bin;
   });
 }
