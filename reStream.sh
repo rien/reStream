@@ -82,7 +82,7 @@ while [ $# -gt 0 ]; do
             unsecure_connection=true
             shift
             ;;
-        -s | --screenshot)
+        -sc | --screenshot)
             screenshot=true
             shift
             ;;
