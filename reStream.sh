@@ -14,6 +14,8 @@ measure_throughput=false                  # measure how fast data is being trans
 window_title=reStream                     # stream window title is reStream
 video_filters=""                          # list of ffmpeg filters to apply
 unsecure_connection=false                 # Establish a unsecure connection that is faster
+screenshot=false                          # Takes a screeenshot and exits
+override=false                            # Overrides the output file if it exists
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
@@ -78,6 +80,14 @@ while [ $# -gt 0 ]; do
             ;;
         -u | --unsecure-connection)
             unsecure_connection=true
+            shift
+            ;;
+        -s | --screenshot)
+            screenshot=true
+            shift
+            ;;
+        -ov | --override)
+            override=true
             shift
             ;;
         -h | --help | *)
@@ -221,6 +231,19 @@ if [ "$output_path" = - ]; then
     window_title_option="-window_title $window_title"
 else
     output_cmd=ffmpeg
+
+    # check if output file exits on host
+    if $override; then
+        rm -f "$output_path"
+    elif [ -e "$output_path" ]; then
+        echo "Output file already exists. Use -ov to override."
+        exit 1
+    fi
+
+
+    if $screenshot; then
+        set -- "$@" -vframes 1
+    fi
 
     if [ "$format" != - ]; then
         set -- "$@" -f "$format"
