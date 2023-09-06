@@ -13,6 +13,7 @@
         shellcheck
         shfmt
         lz4
+        ffmpeg_6-full
       ];
       CARGO_BUILD_TARGET="armv7-unknown-linux-gnueabihf";
       CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER="${pkgs.remarkable-toolchain}/sysroots/x86_64-codexsdk-linux/usr/bin/arm-remarkable-linux-gnueabi/arm-remarkable-linux-gnueabi-gcc";

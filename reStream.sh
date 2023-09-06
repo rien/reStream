@@ -127,6 +127,8 @@ fi
 
 rm_version="$(ssh_cmd cat /sys/devices/soc0/machine)"
 
+echo $rm_version
+
 case "$rm_version" in
     "reMarkable 1.0")
         width=1408
@@ -141,14 +143,17 @@ case "$rm_version" in
             height=1872
             bytes_per_pixel=2
             fb_file="/dev/shm/swtfb.01"
-            pixel_format="rgb565le"
+            # pixel_format="rgb565le"
+            pixel_format="gray16be"
+            video_filters="$video_filters,transpose=3"
         else
             width=1872
             height=1404
-            bytes_per_pixel=1
+            bytes_per_pixel=2
             fb_file=":mem:"
-            pixel_format="gray8"
-            video_filters="$video_filters,transpose=2"
+            # pixel_format="gray8"
+            pixel_format="gray16be"
+            video_filters="$video_filters,transpose=3"
         fi
         ;;
     *)
