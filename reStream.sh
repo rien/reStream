@@ -7,20 +7,19 @@ version="1.2.0"
 # https://ffmpeg.org/doxygen/trunk/pixfmt_8h_source.html
 # https://ffmpeg.org/ffmpeg-filters.html#eq
 
-# This date is used to determine video_filters. (1696246154 == 2023-10-02 11:29:14.927044663 +0000)
-rm2_old_xochitl_date=1696246154
+rm2_old_firmware_version="3.7.0.1930"
 
 # default values for arguments
-remarkable="10.11.99.1"   # remarkable connected through USB
-landscape=false           # rotate 90 degrees to the right
-output_path=-             # display output through ffplay
-format=-                  # automatic output format
-webcam=false              # not to a webcam
-hflip=false               # horizontal flip webcam
-measure_throughput=false  # measure how fast data is being transferred
-window_title=reStream     # stream window title is reStream
-video_filters=""          # list of ffmpeg filters to apply
-unsecure_connection=true  # Establish a unsecure connection that is faster
+remarkable="${REMARKABLE_IP:-10.11.99.1}" # remarkable IP address
+landscape=true                            # rotate 90 degrees to the right
+output_path=-                             # display output through ffplay
+format=-                                  # automatic output format
+webcam=false                              # not to a webcam
+hflip=false                               # horizontal flip webcam
+measure_throughput=false                  # measure how fast data is being transferred
+window_title=reStream                     # stream window title is reStream
+video_filters=""                          # list of ffmpeg filters to apply
+unsecure_connection=false                 # Establish a unsecure connection that is faster
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
@@ -111,6 +110,11 @@ ssh_cmd() {
         "root@$remarkable" "$@"
 }
 
+is_current_rm_firmware_version_ge() {
+    current_rm_firmware_version=$(ssh_cmd "grep 'REMARKABLE_RELEASE_VERSION=' /usr/share/remarkable/update.conf | cut -d '=' -f2")
+    test "$(printf '%s\n' "$current_rm_firmware_version" "$1" | sort -rV | head -n 1)" = "$current_rm_firmware_version"
+}
+
 # kill reStream on remarkable at the end.
 # shellcheck disable=SC2016
 exit_rm() {
@@ -150,13 +154,12 @@ case "$rm_version" in
             fb_file="/dev/shm/swtfb.01"
             pixel_format="rgb565le"
         else
-            # Get the Remarkable software version before proceeding (File date of xochitl.)
             width=1872
             height=1404
             fb_file=":mem:"
 
             # Use updated video settings?
-            if [ $(ssh_cmd 'stat -c "%Y" /usr/bin/xochitl') -ge $rm2_old_xochitl_date ]; then
+            if is_current_rm_firmware_version_ge $rm2_old_firmware_version; then
                 echo "Using the newer :mem: video settings."
                 bytes_per_pixel=2
                 pixel_format="gray16be"
