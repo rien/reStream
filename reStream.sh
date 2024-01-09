@@ -171,7 +171,7 @@ case "$rm_version" in
                 bytes_per_pixel=2
                 pixel_format="gray16be"
                 video_filters="$video_filters eq=gamma=0.125:brightness=0.825,transpose=3"
-            # Use the previous video settings. 
+            # Use the previous video settings.
             else
                 echo "Using the older :mem: video settings."
                 bytes_per_pixel=1
