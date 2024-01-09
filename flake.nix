@@ -19,7 +19,7 @@
     };
     restream-bin = pkgs.stdenv.mkDerivation {
       name = "restream";
-      version = "0.0.1";
+      version = (pkgs.lib.importTOML ./Cargo.toml).package.version;
       src = ./.;
       nativeBuildInputs = [ pkgs.makeWrapper pkgs.lz4 pkgs.ffmpeg-full ];
       buildInputs = [ pkgs.lz4 ];
