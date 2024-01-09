@@ -3,6 +3,12 @@
 # Current reStream.sh version
 version="1.2.0"
 
+# video_filters links:
+# https://ffmpeg.org/doxygen/trunk/pixfmt_8h_source.html
+# https://ffmpeg.org/ffmpeg-filters.html#eq
+
+rm2_old_firmware_version="3.7.0.1930"
+
 # default values for arguments
 remarkable="${REMARKABLE_IP:-10.11.99.1}" # remarkable IP address
 landscape=true                            # rotate 90 degrees to the right
@@ -104,6 +110,11 @@ ssh_cmd() {
         "root@$remarkable" "$@"
 }
 
+is_current_rm_firmware_version_ge() {
+    current_rm_firmware_version=$(ssh_cmd "grep 'REMARKABLE_RELEASE_VERSION=' /usr/share/remarkable/update.conf | cut -d '=' -f2")
+    test "$(printf '%s\n' "$current_rm_firmware_version" "$1" | sort -rV | head -n 1)" = "$current_rm_firmware_version"
+}
+
 # kill reStream on remarkable at the end.
 # shellcheck disable=SC2016
 exit_rm() {
@@ -145,10 +156,21 @@ case "$rm_version" in
         else
             width=1872
             height=1404
-            bytes_per_pixel=1
             fb_file=":mem:"
-            pixel_format="gray8"
-            video_filters="$video_filters,transpose=2"
+
+            # Use updated video settings?
+            if is_current_rm_firmware_version_ge $rm2_old_firmware_version; then
+                echo "Using the newer :mem: video settings."
+                bytes_per_pixel=2
+                pixel_format="gray16be"
+                video_filters="$video_filters eq=gamma=0.125:brightness=0.825,transpose=3"
+            # Use the previous video settings. 
+            else
+                echo "Using the older :mem: video settings."
+                bytes_per_pixel=1
+                pixel_format="gray8"
+                video_filters="$video_filters,transpose=2"
+            fi
         fi
         ;;
     *)
