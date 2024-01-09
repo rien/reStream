@@ -94,14 +94,14 @@ while [ $# -gt 0 ]; do
         -h | --help | *)
             echo "Usage: $0 [-p] [-c] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>] [-m] [-w] [--hflip]"
             echo "Examples:"
-            echo "	$0                              # live view in landscape"
-            echo "	$0 -p                           # live view in portrait"
-            echo "	$0 -c                           # show a cursor where the pen is hovering (rM2 only)"
-            echo "	$0 -s 192.168.0.10              # connect to different IP"
-            echo "	$0 -o remarkable.mp4            # record to a file"
-            echo "	$0 -o udp://dest:1234 -f mpegts # record to a stream"
-            echo "	$0 -w --mirror                  # write to a webcam (yuv420p + resize + mirror)"
-            echo "	$0 -u                           # establish a unsecure but faster connection"
+            echo "	$0                               # live view in landscape"
+            echo "	$0 -p                            # live view in portrait"
+            echo "	$0 -c                            # show a cursor where the pen is hovering (rM2 only)"
+            echo "	$0 -s 192.168.0.10               # connect to different IP"
+            echo "	$0 -o remarkable.mp4             # record to a file"
+            echo "	$0 -o udp://dest:1234 -f mpegts  # record to a stream"
+            echo "	$0 -w --mirror                   # write to a webcam (yuv420p + resize + mirror)"
+            echo "	$0 -u                            # establish a unsecure but faster connection"
             exit 1
             ;;
     esac
