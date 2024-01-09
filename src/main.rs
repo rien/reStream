@@ -3,61 +3,40 @@ extern crate anyhow;
 extern crate lz_fear;
 
 use anyhow::{Context, Result};
-use clap::{crate_authors, crate_version, Clap};
+use clap::Parser;
 use lz_fear::CompressionSettings;
 
 use std::default::Default;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
-use std::net::{TcpStream, TcpListener};
+use std::net::{TcpListener, TcpStream};
 use std::process::Command;
-use std::time::Duration;
-use std::thread;
 use std::sync::mpsc::channel;
+use std::thread;
+use std::time::Duration;
 
-#[derive(Clap)]
-#[clap(version = crate_version!(), author = crate_authors!())]
+#[derive(Parser, Debug)]
+#[command(author, version)]
 pub struct Opts {
-    #[clap(
-        long,
-        name = "port",
-        short = 'l',
-        about = "Listen for an (unsecure) TCP connection to send the data to which reduces some load on the reMarkable and improves fps."
-    )]
+    /// Listen for an (unsecure) TCP connection to send the data to which reduces some load on the reMarkable and improves fps.
+    #[arg(long, name = "port", short = 'l')]
     listen: Option<usize>,
 
-    #[clap(
-        long,
-        name = "height",
-        short = 'h',
-        about = "Height (in pixels) of the framebuffer."
-    )]
+    /// Height (in pixels) of the framebuffer.
+    #[arg(long, name = "height", short = 'h')]
     height: usize,
 
-    #[clap(
-        long,
-        name = "width",
-        short = 'w',
-        about = "Width (in pixels) of the framebuffer."
-    )]
+    /// Width (in pixels) of the framebuffer.
+    #[arg(long, name = "width", short = 'w')]
     width: usize,
 
-    #[clap(
-        long,
-        name = "bytes",
-        short = 'b',
-        about = "How many bytes represent one pixel in the framebuffer."
-    )]
+    /// How many bytes represent one pixel in the framebuffer.
+    #[arg(long, name = "bytes", short = 'b')]
     bytes_per_pixel: usize,
 
-    #[clap(
-        long,
-        name = "path",
-        short = 'f',
-        about = "File containing the framebuffer data. If this equals the string ':mem:' it will try to read the framebuffer from xochitl's process memory (rM2 only)."
-    )]
+    /// File containing the framebuffer data. If this equals the string ':mem:' it will try to read the framebuffer from xochitl's process memory (rM2 only).
+    #[arg(long, name = "path", short = 'f')]
     file: String,
-
 }
 
 fn main() -> Result<()> {
@@ -96,7 +75,8 @@ fn listen_timeout(port: usize, timeout: Duration) -> Result<TcpStream> {
         tx.send(listen.accept()).unwrap();
     });
 
-    let (conn, conn_addr) = rx.recv_timeout(timeout)
+    let (conn, conn_addr) = rx
+        .recv_timeout(timeout)
         .context("Timeout while waiting for host to connect to reMarkable")??;
     eprintln!("[rM] connection received from {}", conn_addr);
     conn.set_write_timeout(Some(timeout))?;
