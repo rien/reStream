@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Current reStream.sh version
-version="1.2.0"
+version="1.3.1"
 
 # video_filters links:
 # https://ffmpeg.org/doxygen/trunk/pixfmt_8h_source.html
