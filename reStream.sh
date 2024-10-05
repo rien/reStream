@@ -170,7 +170,7 @@ case "$rm_version" in
                 echo "Using the newer :mem: video settings."
                 bytes_per_pixel=2
                 pixel_format="gray16be"
-                video_filters="$video_filters colorlevels=rimin=0:rimax=29/255:gimin=0:gimax=29/255:bimin=0:bimax=29/255,transpose=3"
+                video_filters="$video_filters,colorlevels=rimin=0:rimax=29/255:gimin=0:gimax=29/255:bimin=0:bimax=29/255,transpose=3"
             # Use the previous video settings.
             else
                 echo "Using the older :mem: video settings."
