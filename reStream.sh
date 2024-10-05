@@ -21,6 +21,7 @@ measure_throughput=false                  # measure how fast data is being trans
 window_title=reStream                     # stream window title is reStream
 video_filters=""                          # list of ffmpeg filters to apply
 unsecure_connection=false                 # Establish a unsecure connection that is faster
+extra_video_filters=""                    # Extra video filters to add at the end
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
@@ -44,6 +45,11 @@ while [ $# -gt 0 ]; do
             ;;
         -o | --output)
             output_path="$2"
+            shift
+            shift
+            ;;
+        -e | --extra-filters)
+            extra_video_filters="$2"
             shift
             shift
             ;;
@@ -170,7 +176,9 @@ case "$rm_version" in
                 echo "Using the newer :mem: video settings."
                 bytes_per_pixel=2
                 pixel_format="gray16be"
-                video_filters="$video_filters,colorlevels=rimin=0:rimax=29/255:gimin=0:gimax=29/255:bimin=0:bimax=29/255,transpose=3"
+                # NOTE: It seems simpler to use curves, and it achieves the same
+                # video_filters="$video_filters,colorlevels=rimin=0:rimax=29/255:gimin=0:gimax=29/255:bimin=0:bimax=29/255,transpose=3"
+                video_filters="$video_filters,curves=all='0/0 0.125/1 1/1',transpose=3"
             # Use the previous video settings.
             else
                 echo "Using the older :mem: video settings."
@@ -242,7 +250,7 @@ fi
 # set each frame presentation time to the time it is received
 video_filters="$video_filters,setpts=(RTCTIME - RTCSTART) / (TB * 1000000)"
 
-set -- "$@" -vf "${video_filters#,}"
+set -- "$@" -vf "${video_filters#,},${extra_video_filters}"
 
 if [ "$output_path" = - ]; then
     output_cmd=ffplay
