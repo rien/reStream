@@ -176,8 +176,10 @@ case "$rm_version" in
                 echo "Using the newer :mem: video settings."
                 bytes_per_pixel=2
                 pixel_format="gray16be"
-                # NOTE: It seems simpler to use curves, and it achieves the same
-                # video_filters="$video_filters,colorlevels=rimin=0:rimax=29/255:gimin=0:gimax=29/255:bimin=0:bimax=29/255,transpose=3"
+                # "curves" modifies the intensity of an RGB-value.
+                # The remarkable's max output is 1/8th of the normal brightness
+                # so the curves filter sets the scale from 0 -> 1 to 0 -> 0.125
+                # (https://ffmpeg.org/ffmpeg-filters.html#toc-Examples-63)
                 video_filters="$video_filters,curves=all='0/0 0.125/1 1/1',transpose=3"
             # Use the previous video settings.
             else
