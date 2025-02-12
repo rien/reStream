@@ -87,7 +87,7 @@ $ ssh root@10.11.99.1 'chmod +x /home/root/restream'
 ## Usage
 
 1. Connect your reMarkable with the USB cable.
-2. Make sure you can [open an SSH connection](https://remarkablewiki.com/tech/ssh).
+2. Make sure you can [open an SSH connection](https://web.archive.org/web/20230331225904/https://remarkablewiki.com/tech/ssh).
 3. Run `./reStream.sh` in the script directory or `reStream` [if you've installed it in your PATH](#tip) 
 4. A screen will pop-up on your local machine, with a live view of your reMarkable!
 
@@ -155,7 +155,7 @@ Steps you can try if the script isn't working:
 - Update `ffmpeg` to version 4.
 - Make sure RSA keys are allowed on your system:
     - In some modern Unix distributions, RSA keys are considered ["legacy"](https://fedoraproject.org/wiki/Changes/StrongCryptoSettings2) and will no longer work out of the box.
-    - Therefore you need to add a section to your `~.ssh/config` file to allow use of RSA ssh keys for specified hosts. (according to [https://remarkablewiki.com/tech/ssh](https://remarkablewiki.com/tech/ssh), Remarkable devices might not work with non-RSA keys, which is the reason for why this is necessary.)
+    - Therefore you need to add a section to your `~.ssh/config` file to allow use of RSA ssh keys for specified hosts. (according to [The former Remarkable Wiki](https://web.archive.org/web/20230331225904/https://remarkablewiki.com/tech/ssh), Remarkable devices might not work with non-RSA keys, which is the reason for why this is necessary.)
     - This example should work without any additional configuration, although `PubkeyAcceptedKeyTypes=ssh-rsa` is required if you want to modify it: 
         ```
         Host remarkable
