@@ -251,8 +251,7 @@ fi
 
 # set each frame presentation time to the time it is received
 video_filters="$video_filters,setpts=(RTCTIME - RTCSTART) / (TB * 1000000)"
-
-set -- "$@" -vf "${video_filters#,},${extra_video_filters}"
+set -- "$@" -vf "${video_filters#,}${extra_video_filters:+,}${extra_video_filters}"
 
 if [ "$output_path" = - ]; then
     output_cmd=ffplay
