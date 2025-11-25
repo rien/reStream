@@ -22,6 +22,7 @@ window_title=reStream                     # stream window title is reStream
 video_filters=""                          # list of ffmpeg filters to apply
 unsecure_connection=false                 # Establish a unsecure connection that is faster
 extra_video_filters=""                    # Extra video filters to add at the end
+dark_mode="${REMARKABLE_DARK:-false}"     # Dark mode
 
 # loop through arguments and process them
 while [ $# -gt 0 ]; do
@@ -95,6 +96,10 @@ while [ $# -gt 0 ]; do
             ;;
         -u | --unsecure-connection)
             unsecure_connection=true
+            shift
+            ;;
+        --dark-mode)
+            dark_mode=true
             shift
             ;;
         -h | --help | *)
@@ -251,6 +256,11 @@ fi
 
 # set each frame presentation time to the time it is received
 video_filters="$video_filters,setpts=(RTCTIME - RTCSTART) / (TB * 1000000)"
+
+if "$dark_mode"; then
+    video_filters="$video_filters,negate"
+fi
+
 set -- "$@" -vf "${video_filters#,}${extra_video_filters:+,}${extra_video_filters}"
 
 if [ "$output_path" = - ]; then
