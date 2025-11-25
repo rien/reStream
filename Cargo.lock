@@ -259,9 +259,9 @@ checksum = "2874a2af47a2325c2001a6e6fad9b16a53b802102b528163885171cf92b15976"
 
 [[package]]
 name = "libremarkable"
-version = "0.6.3"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2cd261d333884709eeb4c7e23f21c337380580184c7239a82b4240f3a50353d6"
+checksum = "1da7c4a5765735faf196b9c3eb027cd9c2afb58abc772c8ef299dc56dc93edef"
 dependencies = [
  "cgmath",
  "epoll",
@@ -269,7 +269,6 @@ dependencies = [
  "fxhash",
  "libc",
  "log",
- "once_cell",
 ]
 
 [[package]]
@@ -321,12 +320,6 @@ checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
 ]
-
-[[package]]
-name = "once_cell"
-version = "1.21.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 
 [[package]]
 name = "once_cell_polyfill"
