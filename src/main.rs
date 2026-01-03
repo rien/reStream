@@ -44,6 +44,10 @@ pub struct Opts {
     /// Show a cursor where the pen is hovering.
     #[arg(long, name = "cursor", short = 'c')]
     show_cursor: bool,
+
+    /// Memory offset
+    #[arg(long, name = "skip", short = 's')]
+    skip: usize,
 }
 
 fn main() -> Result<()> {
@@ -51,7 +55,7 @@ fn main() -> Result<()> {
 
     let (file, offset) = if opts.file == ":mem:" {
         let pid = xochitl_pid()?;
-        let offset = rm2_fb_offset(pid)?;
+        let offset = rm2_fb_offset(pid, opts.skip)?;
         let mem = format!("/proc/{}/mem", pid);
         (mem, offset)
     } else {
@@ -115,7 +119,7 @@ fn xochitl_pid() -> Result<usize> {
     }
 }
 
-fn rm2_fb_offset(pid: usize) -> Result<usize> {
+fn rm2_fb_offset(pid: usize, skip: usize) -> Result<usize> {
     let file = File::open(format!("/proc/{}/maps", &pid))?;
     let line = BufReader::new(file)
         .lines()
@@ -131,7 +135,7 @@ fn rm2_fb_offset(pid: usize) -> Result<usize> {
         .with_context(|| format!("Error parsing line in /proc/{}/maps", pid))?;
 
     let address = usize::from_str_radix(addr, 16).context("Error parsing framebuffer address")?;
-    Ok(address + 8)
+    Ok(address + skip)
 }
 
 pub struct ReStreamer {

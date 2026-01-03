@@ -7,7 +7,8 @@ version="1.3.1"
 # https://ffmpeg.org/doxygen/trunk/pixfmt_8h_source.html
 # https://ffmpeg.org/ffmpeg-filters.html#eq
 
-rm2_old_firmware_version="3.7.0.1930"
+rm2_firmware_version_3_7="3.7.0.1930"
+rm2_firmware_version_3_24="3.24"
 
 # default values for arguments
 remarkable="${REMARKABLE_IP:-10.11.99.1}" # remarkable IP address
@@ -163,6 +164,8 @@ case "$rm_version" in
         bytes_per_pixel=2
         fb_file="/dev/fb0"
         pixel_format="rgb565le"
+
+        skip_offset=8
         ;;
     "reMarkable 2.0")
         if ssh_cmd "[ -f /dev/shm/swtfb.01 ]"; then
@@ -177,8 +180,20 @@ case "$rm_version" in
             fb_file=":mem:"
 
             # Use updated video settings?
-            if is_current_rm_firmware_version_ge $rm2_old_firmware_version; then
+            if is_current_rm_firmware_version_ge $rm2_firmware_version_3_7; then
                 echo "Using the newer :mem: video settings."
+                bytes_per_pixel=4
+                pixel_format="bgra"
+                video_filters="$video_filters,transpose=2"
+
+                tmp=$height
+                height=$width
+                width=$tmp
+
+                skip_offset=2629636
+            # Use the previous video settings.
+            elif is_current_rm_firmware_version_ge $rm2_firmware_version_3_24; then
+                echo "Using the older :mem: video settings."
                 bytes_per_pixel=2
                 pixel_format="gray16be"
                 # "curves" modifies the intensity of an RGB-value.
@@ -186,12 +201,16 @@ case "$rm_version" in
                 # so the curves filter sets the scale from 0 -> 1 to 0 -> 0.125
                 # (https://ffmpeg.org/ffmpeg-filters.html#toc-Examples-63)
                 video_filters="$video_filters,curves=all='0/0 0.125/1 1/1',transpose=3"
+
+                skip_offset=8
             # Use the previous video settings.
             else
-                echo "Using the older :mem: video settings."
+                echo "Using the ancient :mem: video settings."
                 bytes_per_pixel=1
                 pixel_format="gray8"
                 video_filters="$video_filters,transpose=2"
+
+                skip_offset=8
             fi
         fi
         ;;
@@ -279,7 +298,7 @@ fi
 
 set -e # stop if an error occurs
 
-restream_options="-h $height -w $width -b $bytes_per_pixel -f $fb_file"
+restream_options="-h $height -w $width -b $bytes_per_pixel -f $fb_file -s $skip_offset"
 
 if "$cursor"; then
     restream_options="$restream_options -c"
