@@ -6,7 +6,6 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0"
-lz-fear = "0.1"
-clap = { version = "4.4", features = [ "derive" ] }
-libremarkable = { version = "0.6", features = [ "input" ], default-features = false }
-
+lz-fear = "0.2"
+clap = { version = "4.5", features = [ "derive" ] }
+libremarkable = { version = "0.7", features = [ "input" ], default-features = false }
