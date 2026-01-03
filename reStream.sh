@@ -180,7 +180,7 @@ case "$rm_version" in
             fb_file=":mem:"
 
             # Use updated video settings?
-            if is_current_rm_firmware_version_ge $rm2_firmware_version_3_7; then
+            if is_current_rm_firmware_version_ge $rm2_firmware_version_3_24; then
                 echo "Using the newer :mem: video settings."
                 bytes_per_pixel=4
                 pixel_format="bgra"
@@ -192,7 +192,7 @@ case "$rm_version" in
 
                 skip_offset=2629636
             # Use the previous video settings.
-            elif is_current_rm_firmware_version_ge $rm2_firmware_version_3_24; then
+            elif is_current_rm_firmware_version_ge $rm2_firmware_version_3_7; then
                 echo "Using the older :mem: video settings."
                 bytes_per_pixel=2
                 pixel_format="gray16be"
