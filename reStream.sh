@@ -280,7 +280,7 @@ if "$dark_mode"; then
     video_filters="$video_filters,negate"
 fi
 
-set -- "$@" -vf "${video_filters#,},${extra_video_filters}"
+set -- "$@" -vf "${video_filters#,}${extra_video_filters:+,}${extra_video_filters}"
 
 if [ "$output_path" = - ]; then
     output_cmd=ffplay
