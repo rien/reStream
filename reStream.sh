@@ -99,12 +99,12 @@ while [ $# -gt 0 ]; do
             unsecure_connection=true
             shift
             ;;
-        --dark-mode)
+        -d | --dark-mode)
             dark_mode=true
             shift
             ;;
         -h | --help | *)
-            echo "Usage: $0 [-p] [-c] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>] [-m] [-w] [--hflip]"
+            echo "Usage: $0 [-p] [-c] [-u] [-s <source>] [-o <output>] [-f <format>] [-t <title>] [-m] [-w] [-d] [--hflip]"
             echo "Examples:"
             echo "	$0                               # live view in landscape"
             echo "	$0 -p                            # live view in portrait"
@@ -113,6 +113,7 @@ while [ $# -gt 0 ]; do
             echo "	$0 -o remarkable.mp4             # record to a file"
             echo "	$0 -o udp://dest:1234 -f mpegts  # record to a stream"
             echo "	$0 -w --mirror                   # write to a webcam (yuv420p + resize + mirror)"
+            echo "	$0 -d                            # enable dark mode (flip black and white)"
             echo "	$0 -u                            # establish a unsecure but faster connection"
             exit 1
             ;;
