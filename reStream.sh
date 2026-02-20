@@ -9,6 +9,7 @@ version="1.4.0"
 
 rm2_firmware_version_3_7="3.7.0.1930"
 rm2_firmware_version_3_24="3.24"
+rm2_firmware_version_3_25="3.25"
 
 # default values for arguments
 remarkable="${REMARKABLE_IP:-10.11.99.1}" # remarkable IP address
@@ -192,6 +193,10 @@ case "$rm_version" in
                 width=$tmp
 
                 skip_offset=2629636
+                if is_current_rm_firmware_version_ge $rm2_firmware_version_3_25; then
+                  echo "Using offset settings for firmware 3.25+."
+                  skip_offset=4828808
+                fi
             # Use the previous video settings.
             elif is_current_rm_firmware_version_ge $rm2_firmware_version_3_7; then
                 echo "Using the older :mem: video settings."
