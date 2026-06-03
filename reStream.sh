@@ -235,7 +235,7 @@ if ! lz4 -V >/dev/null; then
 fi
 
 # check if restream binay is present on remarkable
-if ssh_cmd "[ ! -f ~/restream ] && [ ! -f /opt/bin/restream ]"; then
+if ssh_cmd "[ ! -f ~/restream ] && [ ! -f /opt/bin/restream ] && [ ! -f /home/root/.vellum/bin/restream ]"; then
     echo "The restream binary is not installed on your reMarkable."
     echo "Please install it using the instruction in the README:"
     echo "https://github.com/rien/reStream/#installation"
@@ -306,7 +306,7 @@ if "$cursor"; then
 fi
 
 # shellcheck disable=SC2089
-restream_rs="PATH=\"\$PATH:/opt/bin/:.\" restream $restream_options"
+restream_rs="PATH=\"\$PATH:/opt/bin/:/home/root/.vellum/bin:.\" restream $restream_options"
 if $unsecure_connection; then
     listen_port=16789
     ssh_cmd "$restream_rs --listen $listen_port" &
