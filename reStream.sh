@@ -9,6 +9,7 @@ version="1.4.0"
 
 rm2_firmware_version_3_7="3.7.0.1930"
 rm2_firmware_version_3_24="3.24"
+rm2_firmware_version_3_27="3.27.1.0"
 
 # default values for arguments
 remarkable="${REMARKABLE_IP:-10.11.99.1}" # remarkable IP address
