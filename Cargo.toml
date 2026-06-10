@@ -2,7 +2,7 @@
 name = "restream"
 version = "1.4.0"
 authors = ["Rien Maertens <rien.maertens@posteo.be>"]
-edition = "2018"
+edition = "2024"
 
 [dependencies]
 anyhow = "1.0"
