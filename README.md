@@ -63,7 +63,13 @@ $ chmod +x reStream.sh
 
 #### reMarkable
 
-You can install `restream` on reMarkable in three ways.
+You can install `restream` on reMarkable in four ways.
+
+- Install via [vellum](https://github.com/vellum-dev/vellum) if you use it.
+
+```
+$ ssh root@10.11.99.1 'vellum add restream'
+```
 
 - Install via [toltec](https://github.com/toltec-dev/toltec) if you use it.
 
