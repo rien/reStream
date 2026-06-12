@@ -140,7 +140,7 @@ is_current_rm_firmware_version_ge() {
 exit_rm() {
     ssh_cmd 'kill $(pidof restream)'
 }
-trap exit_rm EXIT INT HUP
+trap exit_rm EXIT INT HUP TERM
 
 # SSH_CONNECTION is a variable on reMarkable => ssh '' instead of ssh ""
 # shellcheck disable=SC2016
