@@ -9,7 +9,6 @@ version="1.5.0"
 
 rm2_firmware_version_3_7="3.7.0.1930"
 rm2_firmware_version_3_24="3.24"
-rm2_firmware_version_3_27="3.27.1.0"
 
 # default values for arguments
 remarkable="${REMARKABLE_IP:-10.11.99.1}" # remarkable IP address
@@ -140,7 +139,7 @@ is_current_rm_firmware_version_ge() {
 exit_rm() {
     ssh_cmd 'kill $(pidof restream)'
 }
-trap exit_rm EXIT INT HUP
+trap exit_rm EXIT INT HUP TERM
 
 # SSH_CONNECTION is a variable on reMarkable => ssh '' instead of ssh ""
 # shellcheck disable=SC2016
@@ -182,18 +181,7 @@ case "$rm_version" in
             fb_file=":mem:"
 
             # Use updated video settings?
-            if is_current_rm_firmware_version_ge $rm2_firmware_version_3_27; then
-                echo "Using the 3.27+ :mem: video settings."
-                bytes_per_pixel=4
-                pixel_format="bgra"
-                video_filters="$video_filters,transpose=1"
-
-                tmp=$height
-                height=$width
-                width=$tmp
-
-                skip_offset=4705256
-            elif is_current_rm_firmware_version_ge $rm2_firmware_version_3_24; then
+            if is_current_rm_firmware_version_ge $rm2_firmware_version_3_24; then
                 echo "Using the 3.24+ :mem: video settings."
                 bytes_per_pixel=4
                 pixel_format="bgra"

@@ -234,37 +234,39 @@ impl ReStreamer {
 
     /// Draw pen position into fb data, if necessary (in hover range and not drawing).
     fn draw_pen_position(&mut self, buf: &mut [u8]) {
-        if let (false, Some((y, x))) = (self.drawing, self.pen_pos) {
-            let flip = self.width > self.height;
-            let (x, y) = if flip { (y, x) } else { (x, y) };
+        if let (false, Some((x, y))) = (self.drawing, self.pen_pos) {
             // we need negative numbers to calculate offsets correctly
-            let width = if flip { self.height } else { self.width } as isize;
-            let height = if flip { self.width } else { self.height } as isize;
+            let width = self.width as isize;
+            let height = self.height as isize;
             let bpp = self.bytes_per_pixel as isize;
             let cursor = self.cursor as isize;
+            let (pen_row, pen_col) = if self.width > self.height {
+                (x as isize, width - y as isize)
+            } else {
+                (y as isize, x as isize)
+            };
             for (i, (yoff, no)) in PEN_IMAGE.iter().enumerate() {
                 // we draw vertically (lines along y)
-                let xoff = i as isize - (PEN_IMAGE.len() as isize / 2);
-                let xstart = x as isize + xoff;
+                let row = pen_row + i as isize - (PEN_IMAGE.len() as isize / 2);
                 // line outside of canvas?
-                if xstart < 0 || xstart >= width {
+                if row < 0 || row >= height {
                     continue;
                 }
-                let mut ystart = (height - y as isize) + yoff;
+                let mut col = pen_col + yoff;
                 let mut no = *no;
                 // cut-off at sides
-                if ystart < 0 {
-                    no += ystart;
-                    ystart = 0;
+                if col < 0 {
+                    no += col;
+                    col = 0;
                 }
-                if ystart + no > height {
-                    no = height - ystart;
+                if col + no > width {
+                    no = width - col;
                 }
                 if no <= 0 {
                     continue;
                 }
                 // translate to buf indexes, check bounds and draw
-                let mut px_start = (xstart * height + ystart) * bpp;
+                let mut px_start = (row * width + col) * bpp;
                 let mut px_end = px_start + no * bpp;
                 // outside current buf?
                 if px_end < cursor || px_start >= cursor + buf.len() as isize {
@@ -277,7 +279,8 @@ impl ReStreamer {
                 if px_end > cursor + buf.len() as isize {
                     px_end = cursor + buf.len() as isize;
                 }
-                // invert pixel (on RM2)
+                // invert pixels
+                // bytewise NOT inverts every supported pixel format
                 // TODO: Do something sensible on RM1
                 for b in buf[(px_start - cursor) as usize..(px_end - cursor) as usize].iter_mut() {
                     *b = 255 - *b;
