@@ -131,7 +131,11 @@ ssh_cmd() {
 }
 
 is_current_rm_firmware_version_ge() {
-    current_rm_firmware_version=$(ssh_cmd "grep 'REMARKABLE_RELEASE_VERSION=' /usr/share/remarkable/update.conf | cut -d '=' -f2")
+    # Try update.conf (rM1/rM2), fall back to /etc/os-release IMG_VERSION (Tatsu/newer)
+    current_rm_firmware_version=$(ssh_cmd "grep 'REMARKABLE_RELEASE_VERSION=' /usr/share/remarkable/update.conf 2>/dev/null | cut -d '=' -f2")
+    if [ -z "$current_rm_firmware_version" ]; then
+        current_rm_firmware_version=$(ssh_cmd "grep 'IMG_VERSION=' /etc/os-release 2>/dev/null | cut -d '=' -f2 | tr -d '\"'")
+    fi
     test "$(printf '%s\n' "$current_rm_firmware_version" "$1" | sort -rV | head -n 1)" = "$current_rm_firmware_version"
 }
 
@@ -168,6 +172,21 @@ case "$rm_version" in
         pixel_format="rgb565le"
 
         skip_offset=8
+        ;;
+    "reMarkable Tatsu")
+        width=1404
+        height=1872
+        bytes_per_pixel=4
+        fb_file=":mem:"
+        pixel_format="bgra"
+        skip_offset=2629648
+        dark_mode=false
+        # The buffer is portrait (1404×1872). For landscape view (default),
+        # rotate 90° CCW. For portrait (-p), show as-is.
+        if $landscape; then
+            extra_video_filters="transpose=2"
+        fi
+        landscape=false
         ;;
     "reMarkable 2.0")
         if ssh_cmd "[ -f /dev/shm/swtfb.01 ]"; then
@@ -312,6 +331,7 @@ fi
 set -e # stop if an error occurs
 
 restream_options="-h $height -w $width -b $bytes_per_pixel -f $fb_file -s $skip_offset"
+
 
 if "$cursor"; then
     restream_options="$restream_options -c"

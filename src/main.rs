@@ -6,7 +6,9 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use lz_fear::CompressionSettings;
 
+#[cfg(feature = "cursor")]
 use libremarkable::cgmath;
+#[cfg(feature = "cursor")]
 use libremarkable::input::{ev::EvDevContext, InputDevice, InputEvent, WacomEvent, WacomPen};
 
 use std::default::Default;
@@ -14,7 +16,9 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
 use std::net::{TcpListener, TcpStream};
 use std::process::Command;
-use std::sync::mpsc::{channel, Receiver};
+use std::sync::mpsc::channel;
+#[cfg(feature = "cursor")]
+use std::sync::mpsc::Receiver;
 use std::thread;
 use std::time::Duration;
 
@@ -37,11 +41,11 @@ pub struct Opts {
     #[arg(long, name = "bytes", short = 'b')]
     bytes_per_pixel: usize,
 
-    /// File containing the framebuffer data. If this equals the string ':mem:' it will try to read the framebuffer from xochitl's process memory (rM2 only).
+    /// File containing the framebuffer data. If this equals the string ':mem:' it will try to read the framebuffer from xochitl's process memory.
     #[arg(long, name = "path", short = 'f')]
     file: String,
 
-    /// Show a cursor where the pen is hovering.
+    /// Show a cursor where the pen is hovering. Requires building with --features cursor.
     #[arg(long, name = "cursor", short = 'c')]
     show_cursor: bool,
 
@@ -53,9 +57,13 @@ pub struct Opts {
 fn main() -> Result<()> {
     let ref opts: Opts = Opts::parse();
 
+    if opts.show_cursor && !cfg!(feature = "cursor") {
+        eprintln!("Warning: cursor support requires building with --features cursor.");
+    }
+
     let (file, offset) = if opts.file == ":mem:" {
         let pid = xochitl_pid()?;
-        let offset = rm2_fb_offset(pid, opts.skip)?;
+        let offset = fb_offset(pid, opts.skip)?;
         let mem = format!("/proc/{}/mem", pid);
         (mem, offset)
     } else {
@@ -119,23 +127,52 @@ fn xochitl_pid() -> Result<usize> {
     }
 }
 
-fn rm2_fb_offset(pid: usize, skip: usize) -> Result<usize> {
+fn fb_offset(pid: usize, skip: usize) -> Result<usize> {
     let file = File::open(format!("/proc/{}/maps", &pid))?;
-    let line = BufReader::new(file)
+    let lines: Vec<String> = BufReader::new(file)
         .lines()
-        .skip_while(|line| matches!(line, Ok(l) if !l.ends_with("/dev/fb0")))
-        .skip(1)
-        .next()
-        .with_context(|| format!("No line containing /dev/fb0 in /proc/{}/maps file", pid))?
-        .with_context(|| format!("Error reading file /proc/{}/maps", pid))?;
+        .collect::<std::io::Result<_>>()?;
 
-    let addr = line
-        .split("-")
-        .next()
-        .with_context(|| format!("Error parsing line in /proc/{}/maps", pid))?;
+    // rM1: framebuffer is the mapping immediately after /dev/fb0
+    if let Some(pos) = lines.iter().position(|l| l.ends_with("/dev/fb0")) {
+        let line = lines.get(pos + 1)
+            .with_context(|| format!("No line after /dev/fb0 in /proc/{}/maps", pid))?;
+        let addr = line.split("-").next()
+            .with_context(|| format!("Error parsing line in /proc/{}/maps", pid))?;
+        let address = usize::from_str_radix(addr, 16)
+            .context("Error parsing framebuffer address")?;
+        return Ok(address + skip);
+    }
 
-    let address = usize::from_str_radix(addr, 16).context("Error parsing framebuffer address")?;
-    Ok(address + skip)
+    // rM2 / Tatsu / Paper Pure: the BGRA color rendering buffer sits immediately
+    // after the last /dev/dri/card0 DRM waveform buffer. It is an anonymous
+    // rw-p mapping of ~10–16 MB.
+    if let Some(drm_last) = lines.iter().filter(|l| l.contains("/dev/dri/card0")).last() {
+        let drm_hi = drm_last.split('-').nth(1)
+            .and_then(|s| s.split_whitespace().next())
+            .and_then(|s| usize::from_str_radix(s, 16).ok())
+            .unwrap_or(0);
+
+        if let Some(line) = lines.iter().find(|l| {
+            let parts: Vec<&str> = l.split_whitespace().collect();
+            if parts.len() != 5 { return false; }
+            if let (Some(lo_s), Some(hi_s)) = (parts[0].split('-').next(), parts[0].split('-').nth(1)) {
+                if let (Ok(lo), Ok(hi)) = (usize::from_str_radix(lo_s, 16), usize::from_str_radix(hi_s, 16)) {
+                    return lo >= drm_hi && (hi - lo) >= 10*1024*1024 && (hi - lo) <= 16*1024*1024;
+                }
+            }
+            false
+        }) {
+            let addr = line.split('-').next()
+                .context("Error parsing color buffer address")?;
+            let address = usize::from_str_radix(addr, 16)
+                .context("Error parsing color buffer address")?;
+            eprintln!("[rM] Color buffer at {:#x}", address);
+            return Ok(address + skip);
+        }
+    }
+
+    Err(anyhow!("No framebuffer mapping found in /proc/{}/maps", pid))
 }
 
 pub struct ReStreamer {
@@ -143,13 +180,20 @@ pub struct ReStreamer {
     start: u64,
     cursor: usize,
     size: usize,
-    width: usize,
-    height: usize,
-    bytes_per_pixel: usize,
 
+    #[cfg(feature = "cursor")]
     show_cursor: bool,
+    #[cfg(feature = "cursor")]
+    width: usize,
+    #[cfg(feature = "cursor")]
+    height: usize,
+    #[cfg(feature = "cursor")]
+    bytes_per_pixel: usize,
+    #[cfg(feature = "cursor")]
     input_rx: Receiver<InputEvent>,
+    #[cfg(feature = "cursor")]
     pen_pos: Option<(usize, usize)>,
+    #[cfg(feature = "cursor")]
     drawing: bool,
 }
 
@@ -167,22 +211,34 @@ impl ReStreamer {
         let cursor = 0;
         let file = File::open(path)?;
 
+        #[cfg(feature = "cursor")]
         let (input_tx, input_rx) = channel::<InputEvent>();
+        #[cfg(feature = "cursor")]
         if show_cursor {
             EvDevContext::new(InputDevice::Wacom, input_tx).start();
         }
+
+        #[cfg(not(feature = "cursor"))]
+        let _ = (width, height, bytes_per_pixel, show_cursor);
 
         let mut streamer = ReStreamer {
             file,
             start: start,
             cursor,
             size,
-            width,
-            height,
-            bytes_per_pixel,
+            #[cfg(feature = "cursor")]
             show_cursor,
+            #[cfg(feature = "cursor")]
+            width,
+            #[cfg(feature = "cursor")]
+            height,
+            #[cfg(feature = "cursor")]
+            bytes_per_pixel,
+            #[cfg(feature = "cursor")]
             input_rx,
+            #[cfg(feature = "cursor")]
             pen_pos: None,
+            #[cfg(feature = "cursor")]
             drawing: false,
         };
         streamer.next_frame()?;
@@ -192,6 +248,7 @@ impl ReStreamer {
     pub fn next_frame(&mut self) -> std::io::Result<()> {
         self.file.seek(SeekFrom::Start(self.start))?;
         self.cursor = 0;
+        #[cfg(feature = "cursor")]
         if self.show_cursor {
             self.read_input();
         }
@@ -200,6 +257,7 @@ impl ReStreamer {
     }
 
     /// Read input events to figure out pen state and position.
+    #[cfg(feature = "cursor")]
     fn read_input(&mut self) {
         let mut down = self.pen_pos.is_some();
         let mut pos = self.pen_pos.unwrap_or((0, 0));
@@ -233,6 +291,7 @@ impl ReStreamer {
     }
 
     /// Draw pen position into fb data, if necessary (in hover range and not drawing).
+    #[cfg(feature = "cursor")]
     fn draw_pen_position(&mut self, buf: &mut [u8]) {
         if let (false, Some((y, x))) = (self.drawing, self.pen_pos) {
             let flip = self.width > self.height;
@@ -288,6 +347,7 @@ impl ReStreamer {
 }
 
 // Image of pen, given as (offset from pen position, number of pixels)
+#[cfg(feature = "cursor")]
 static PEN_IMAGE: [(isize, isize); 17] = [
     (0, 1),   // 00000000100000000
     (0, 1),   // 00000000100000000
@@ -318,6 +378,7 @@ impl Read for ReStreamer {
             self.file.read(&mut buf[0..rest])?
         };
 
+        #[cfg(feature = "cursor")]
         if self.show_cursor {
             self.draw_pen_position(&mut buf[0..bytes_read]);
         }
@@ -329,3 +390,4 @@ impl Read for ReStreamer {
         Ok(bytes_read)
     }
 }
+
