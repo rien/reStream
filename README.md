@@ -4,6 +4,7 @@ reMarkable screen sharing over SSH.
 
 [![rm1](https://img.shields.io/badge/rM1-supported-green)](https://remarkable.com/store/remarkable)
 [![rm2](https://img.shields.io/badge/rM2-supported-green)](https://remarkable.com/store/remarkable-2)
+[![rmpaperpure](https://img.shields.io/badge/rM_Paper_Pure-supported-green)](docs/tatsu.md)
 
 ![A demo of reStream](extra/demo.gif)
 
@@ -89,6 +90,8 @@ $ ssh root@10.11.99.1 'wget https://github.com/rien/reStream/releases/latest/dow
 $ scp restream.arm.static root@10.11.99.1:/home/root/restream
 $ ssh root@10.11.99.1 'chmod +x /home/root/restream'
 ```
+
+> **Note for reMarkable Paper Pure users:** the Paper Pure uses an aarch64 processor and requires a separate binary. See [docs/tatsu.md](docs/tatsu.md) for build instructions.
 
 ## Usage
 
@@ -178,6 +181,8 @@ Steps you can try if the script isn't working:
 If you want to play with the `restream` code, you will have to [install Rust](https://www.rust-lang.org/learn/get-started).
 
 There are three ways of building the required restream binary for streaming the reMarkable framebuffer. For these approaches, the generated restream binary will be located under `target/armv7-unknown-linux-gnueabihf/release/restream`.
+
+> **reMarkable Paper Pure:** requires an aarch64 binary instead. See [docs/tatsu.md](docs/tatsu.md).
 
 - **Using nix flakes**
   With [Nix](https://nixos.org/guides/install-nix.html) installed you can

@@ -4,8 +4,13 @@ version = "1.5.0"
 authors = ["Rien Maertens <rien.maertens@posteo.be>"]
 edition = "2024"
 
+[features]
+default = []
+# Pen cursor overlay — requires libremarkable (armhf/rM2 only, not aarch64/Tatsu)
+cursor = ["libremarkable"]
+
 [dependencies]
 anyhow = "1.0"
 lz-fear = "0.2"
 clap = { version = "4.5", features = [ "derive" ] }
-libremarkable = { version = "0.7", features = [ "input" ], default-features = false }
+libremarkable = { version = "0.7", features = [ "input" ], default-features = false, optional = true }
